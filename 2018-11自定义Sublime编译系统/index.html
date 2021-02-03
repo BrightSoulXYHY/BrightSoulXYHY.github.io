@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+
+    <!--[if lt IE 9]>
+        <style>body {display: none; background: none !important} </style>
+        <meta http-equiv="Refresh" Content="0; url=//outdatedbrowser.com/" />
+    <![endif]-->
+
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="format-detection" content="telephone=no" />
+<meta name="author" content="BrightSoul" />
+
+
+
+<meta name="description" content="虽然网上已有不少关于sublime编译系统的教程，但他们都没有解决python无法输入，c&#x2F;c++文件编译无报错无回显等问题。 自定义Sublime的编译系统，完美解决python编译无法输入，C++编译无法报错等问题（基于VS2017）。并设置了8086的编译。 最开始折腾这些的想法是VS过于臃肿，最初折腾了MinGW的GCC和G++编译C，但编译无报错和是不是提示无法定位接口程序之类的十分蛋疼">
+<meta property="og:type" content="article">
+<meta property="og:title" content="自定义Sublime编译系统">
+<meta property="og:url" content="http://123.com/2018-11%E8%87%AA%E5%AE%9A%E4%B9%89Sublime%E7%BC%96%E8%AF%91%E7%B3%BB%E7%BB%9F/index.html">
+<meta property="og:site_name" content="我不想写博客之博客">
+<meta property="og:description" content="虽然网上已有不少关于sublime编译系统的教程，但他们都没有解决python无法输入，c&#x2F;c++文件编译无报错无回显等问题。 自定义Sublime的编译系统，完美解决python编译无法输入，C++编译无法报错等问题（基于VS2017）。并设置了8086的编译。 最开始折腾这些的想法是VS过于臃肿，最初折腾了MinGW的GCC和G++编译C，但编译无报错和是不是提示无法定位接口程序之类的十分蛋疼">
+<meta property="og:locale">
+<meta property="og:image" content="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2018-11%E8%87%AA%E5%AE%9A%E4%B9%89Sublime%E7%BC%96%E8%AF%91%E7%B3%BB%E7%BB%9F/img-201811-01BuildPython.png">
+<meta property="og:image" content="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2018-11%E8%87%AA%E5%AE%9A%E4%B9%89Sublime%E7%BC%96%E8%AF%91%E7%B3%BB%E7%BB%9F/img-201811-01BuildCError.png">
+<meta property="og:image" content="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2018-11%E8%87%AA%E5%AE%9A%E4%B9%89Sublime%E7%BC%96%E8%AF%91%E7%B3%BB%E7%BB%9F/img-201811-01BuildCSucces.png">
+<meta property="og:image" content="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2018-11%E8%87%AA%E5%AE%9A%E4%B9%89Sublime%E7%BC%96%E8%AF%91%E7%B3%BB%E7%BB%9F/img-201811-01BuildAssebble.png">
+<meta property="article:published_time" content="2018-11-08T15:25:15.000Z">
+<meta property="article:modified_time" content="2021-02-03T09:51:40.157Z">
+<meta property="article:author" content="BrightSoul">
+<meta property="article:tag" content="Sublime">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="C++">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2018-11%E8%87%AA%E5%AE%9A%E4%B9%89Sublime%E7%BC%96%E8%AF%91%E7%B3%BB%E7%BB%9F/img-201811-01BuildPython.png">
+
+<link rel="apple-touch-icon" href= "/apple-touch-icon.png">
+
+
+    <link rel="alternate" href="/atom.xml" title="我不想写博客之博客" type="application/atom+xml">
+
+
+
+    <link rel="shortcut icon" href="/img/robot.png">
+
+
+
+    <link href="//cdn.bootcss.com/animate.css/3.5.1/animate.min.css" rel="stylesheet">
+
+
+
+    <link href="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.min.css" rel="stylesheet">
+
+
+
+    <script src="//cdn.bootcss.com/pace/1.0.2/pace.min.js"></script>
+    <link href="//cdn.bootcss.com/pace/1.0.2/themes/blue/pace-theme-minimal.css" rel="stylesheet">
+
+
+
+<link rel="stylesheet" href="/css/style.css">
+
+
+
+
+<link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+
+<title>自定义Sublime编译系统 | 我不想写博客之博客</title>
+
+<script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+<script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+
+<script>
+    var yiliaConfig = {
+        fancybox: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        fancybox_js: "//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.min.js",
+        scrollreveal: "//cdn.bootcss.com/scrollReveal.js/3.1.4/scrollreveal.min.js",
+        search: true
+    }
+</script>
+
+
+    <script> yiliaConfig.jquery_ui = [false]; </script>
+
+
+
+    <script> yiliaConfig.rootUrl = "\/";</script>
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.3.0"></head>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+    <header id="header" class="inner">
+        <a href="/" class="profilepic">
+            <img src="/img/BrightSoul.jpg" class="animated zoomIn">
+        </a>
+        <hgroup>
+          <h1 class="header-author"><a href="/">BrightSoul</a></h1>
+        </hgroup>
+
+        
+        <p class="header-subtitle">顺不妄喜，逆不惶馁。</p>
+        
+
+        
+            <form id="search-form">
+            <input type="text" id="local-search-input" name="q" placeholder="search..." class="search form-control" autocomplete="off" autocorrect="off" searchonload="true" />
+            <i class="fa fa-times" onclick="resetSearch()"></i>
+            </form>
+            <div id="local-search-result"></div>
+            <p class='no-result'>No results found <i class='fa fa-spinner fa-pulse'></i></p>
+        
+
+
+        
+            <div id="switch-btn" class="switch-btn">
+                <div class="icon">
+                    <div class="icon-ctn">
+                        <div class="icon-wrap icon-house" data-idx="0">
+                            <div class="birdhouse"></div>
+                            <div class="birdhouse_holes"></div>
+                        </div>
+                        <div class="icon-wrap icon-ribbon hide" data-idx="1">
+                            <div class="ribbon"></div>
+                        </div>
+                        
+                        <div class="icon-wrap icon-link hide" data-idx="2">
+                            <div class="loopback_l"></div>
+                            <div class="loopback_r"></div>
+                        </div>
+                        
+                        
+                        <div class="icon-wrap icon-me hide" data-idx="3">
+                            <div class="user"></div>
+                            <div class="shoulder"></div>
+                        </div>
+                        
+                    </div>
+                    
+                </div>
+                <div class="tips-box hide">
+                    <div class="tips-arrow"></div>
+                    <ul class="tips-inner">
+                        <li>菜单</li>
+                        <li>标签</li>
+                        
+                        <li>友情链接</li>
+                        
+                        
+                        <li>关于我</li>
+                        
+                    </ul>
+                </div>
+            </div>
+        
+
+        <div id="switch-area" class="switch-area">
+            <div class="switch-wrap">
+                <section class="switch-part switch-part1">
+                    <nav class="header-menu">
+                        <ul>
+                        
+                            <li><a href="/">主页</a></li>
+                        
+                            <li><a href="/archives/">所有文章</a></li>
+                        
+                            <li><a href="/tags/">标签云</a></li>
+                        
+                        </ul>
+                    </nav>
+                    <nav class="header-nav">
+                        <ul class="social">
+                            
+                                <a class="fa Email" href="mailto:653538096@qq.com" title="Email"></a>
+                            
+                                <a class="fa GitHub" target="_blank" rel="noopener" href="https://github.com/BrightSoulXYHY" title="GitHub"></a>
+                            
+                                <a class="fa 知乎" target="_blank" rel="noopener" href="https://www.zhihu.com/column/c_1195290248320770048" title="知乎"></a>
+                            
+                        </ul>
+                    </nav>
+                </section>
+                
+                
+                <section class="switch-part switch-part2">
+                    <div class="widget tagcloud" id="js-tagcloud">
+                        <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AirSim/" rel="tag">AirSim</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">C++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Python/" rel="tag">Python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SITL/" rel="tag">SITL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Sublime/" rel="tag">Sublime</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VIO/" rel="tag">VIO</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%BC%80%E5%8F%91%E6%96%87%E6%A1%A3/" rel="tag">开发文档</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%95%B0%E5%AD%A6/" rel="tag">数学</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%96%87%E6%A1%A3/" rel="tag">文档</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%87%AA%E5%8A%A8%E6%8E%A7%E5%88%B6%E5%8E%9F%E7%90%86/" rel="tag">自动控制原理</a></li></ul>
+                    </div>
+                </section>
+                
+                
+                
+                <section class="switch-part switch-part3">
+                    <div id="js-friends">
+                    
+                      <a class="main-nav-link switch-friends-link" target="_blank" rel="noopener" href="https://hexo.io">Hexo</a>
+                    
+                      <a class="main-nav-link switch-friends-link" target="_blank" rel="noopener" href="https://pages.github.com/">GitHub</a>
+                    
+                      <a class="main-nav-link switch-friends-link" target="_blank" rel="noopener" href="http://moxfive.xyz/">MOxFIVE</a>
+                    
+                    </div>
+                </section>
+                
+
+                
+                
+                <section class="switch-part switch-part4">
+                
+                    <div id="js-aboutme">努力成为独当一面的自动驾驶工程师。</div>
+                </section>
+                
+            </div>
+        </div>
+    </header>                
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+      <div class="overlay">
+          <div class="slider-trigger"></div>
+          <h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">BrightSoul</a></h1>
+      </div>
+    <div class="intrude-less">
+        <header id="header" class="inner">
+            <a href="/" class="profilepic">
+                <img src="/img/BrightSoul.jpg" class="animated zoomIn">
+            </a>
+            <hgroup>
+              <h1 class="header-author"><a href="/" title="回到主页">BrightSoul</a></h1>
+            </hgroup>
+            
+            <p class="header-subtitle">顺不妄喜，逆不惶馁。</p>
+            
+            <nav class="header-menu">
+                <ul>
+                
+                    <li><a href="/">主页</a></li>
+                
+                    <li><a href="/archives/">所有文章</a></li>
+                
+                    <li><a href="/tags/">标签云</a></li>
+                
+                <div class="clearfix"></div>
+                </ul>
+            </nav>
+            <nav class="header-nav">
+                        <ul class="social">
+                            
+                                <a class="fa Email" target="_blank" href="mailto:653538096@qq.com" title="Email"></a>
+                            
+                                <a class="fa GitHub" target="_blank" href="https://github.com/BrightSoulXYHY" title="GitHub"></a>
+                            
+                                <a class="fa 知乎" target="_blank" href="https://www.zhihu.com/column/c_1195290248320770048" title="知乎"></a>
+                            
+                        </ul>
+            </nav>
+        </header>                
+    </div>
+    <link class="menu-list" tags="标签" friends="友情链接" about="关于我"/>
+</nav>
+      <div class="body-wrap"><article id="post-2018-11自定义Sublime编译系统" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2018-11%E8%87%AA%E5%AE%9A%E4%B9%89Sublime%E7%BC%96%E8%AF%91%E7%B3%BB%E7%BB%9F/" class="article-date">
+      <time datetime="2018-11-08T15:25:15.000Z" itemprop="datePublished">2018-11-08</time>
+</a>
+
+
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      自定义Sublime编译系统
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+    <div class="article-category tagcloud">
+    <a class="article-category-link" href="/categories/%E7%BC%96%E7%A8%8B/">编程</a>
+    </div>
+
+
+        
+    <div class="article-tag tagcloud">
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C/" rel="tag">C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/" rel="tag">Python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Sublime/" rel="tag">Sublime</a></li></ul>
+    </div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+          
+        <p>虽然网上已有不少关于<a target="_blank" rel="noopener" href="https://blog.qiujinfeng.com/archives/making-Sublime-Text-cplusplus-IDE.html">sublime编译系统的教程</a>，但他们都没有解决python无法输入，c/c++文件编译无报错无回显等问题。</p>
+<p>自定义Sublime的编译系统，完美解决python编译无法输入，C++编译无法报错等问题（基于VS2017）。并设置了8086的编译。</p>
+<p>最开始折腾这些的想法是VS过于臃肿，最初折腾了MinGW的GCC和G++编译C，但编译无报错和是不是提示无法定位接口程序之类的十分蛋疼。之后查阅资料发现可以调用VS的cl编译便动了这个想法。不启动VS只是调用VS的编译器。</p>
+<p>2018-12-22 </p>
+<p>更新C++编译报错信息</p>
+<p>汇编语言调试模式</p>
+<p>后续：</p>
+<p>vscode的折腾</p>
+<p>调试相关</p>
+<a id="more"></a>
+
+<p>本文的所有编译脚本均以上传至<a target="_blank" rel="noopener" href="https://github.com/BrightSoulXYHY/Sublime_Build">github</a></p>
+<h2 id="Sublime的编译系统"><a href="#Sublime的编译系统" class="headerlink" title="Sublime的编译系统"></a>Sublime的编译系统</h2><p>sublime的编译系统为*.sublime-build，存于Sublime Text 64\Data\Packages\User文件夹下，可以自定义自己的编译系统，基本实例如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">     &quot;shell_cmd&quot;:&quot;F:&#x2F;Progroming&#x2F;_Path&#x2F;build_cpp.bat $file_base_name $file_extension&quot;, </span><br><span class="line">    &quot;file_regex&quot;: &quot;^(..[^:]*):([0-9]+):?([0-9]+)?:? (.*)$&quot;,</span><br><span class="line">    &quot;working_dir&quot;: &quot;$&#123;file_path&#125;&quot;,</span><br><span class="line">    &quot;selector&quot;: &quot;source.c, source.c++&quot;,</span><br><span class="line">    &quot;encoding&quot;: &quot;cp936&quot;,</span><br><span class="line">   </span><br><span class="line">   &quot;variants&quot;:</span><br><span class="line">    [</span><br><span class="line">        &#123;   </span><br><span class="line">        &quot;name&quot;: &quot;Run&quot;,</span><br><span class="line">            &quot;shell_cmd&quot;: &quot;g++ -Wall -std&#x3D;c++11 \&quot;$&#123;file&#125;\&quot; -o \&quot;$&#123;file_base_name&#125;\&quot; &amp;&amp; start cmd &#x2F;c \&quot;\&quot;$&#123;file_path&#125;&#x2F;$&#123;file_base_name&#125;\&quot; &amp; pause\&quot;&quot;</span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th align="center">key</th>
+<th align="center">meaning</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">shell_cmd</td>
+<td align="center">调用编译的DOS命令</td>
+</tr>
+<tr>
+<td align="center">file_regex</td>
+<td align="center">获取编译错误时的信息</td>
+</tr>
+<tr>
+<td align="center">working_dir</td>
+<td align="center">工作目录</td>
+</tr>
+<tr>
+<td align="center">selector</td>
+<td align="center">筛选器与自动编译相关，source标识语言文件的定义中寻找*.tmPreferences</td>
+</tr>
+<tr>
+<td align="center">encoding</td>
+<td align="center">编码格式[^1]</td>
+</tr>
+<tr>
+<td align="center">variants</td>
+<td align="center">同一编译模式下的不同选项，可自定义改变一些参数</td>
+</tr>
+<tr>
+<td align="center">file_patterns</td>
+<td align="center">编译系统应该支持的文件模式，可以自定义设置，形如：[“*.py”]</td>
+</tr>
+<tr>
+<td align="center">[^1]: 编码格式参考链接：<a target="_blank" rel="noopener" href="https://docs.python.org/3.3/library/codecs.html#id3">https://docs.python.org/3.3/library/codecs.html#id3</a></td>
+<td align="center"></td>
+</tr>
+</tbody></table>
+<p>一些常用的宏变量[^2]可以用于设置编译文件</p>
+<p>[^2]: Sublime官方文档: <a target="_blank" rel="noopener" href="https://www.sublimetext.com/docs/3/build_systems.html">https://www.sublimetext.com/docs/3/build_systems.html</a> </p>
+<table>
+<thead>
+<tr>
+<th align="center">宏选项</th>
+<th align="center">意义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">$file_path</td>
+<td align="center">当前文件所在路径, 比如 C:\Files.</td>
+</tr>
+<tr>
+<td align="center">$file</td>
+<td align="center">当前文件的完整路径, 比如 C:\Files\Chapter1.txt.</td>
+</tr>
+<tr>
+<td align="center">$file_name</td>
+<td align="center">当前文件的文件名, 比如 Chapter1.txt.</td>
+</tr>
+<tr>
+<td align="center">$file_extension</td>
+<td align="center">当前文件的扩展名, 比如 txt.</td>
+</tr>
+<tr>
+<td align="center">$file_base_name</td>
+<td align="center">当前文件仅包含文件名的部分, 比如 Document.</td>
+</tr>
+<tr>
+<td align="center">$packages</td>
+<td align="center">Packages 文件夹的完整路径.</td>
+</tr>
+<tr>
+<td align="center">$project</td>
+<td align="center">当前项目文件的完整路径.</td>
+</tr>
+<tr>
+<td align="center">$project_path</td>
+<td align="center">当前项目文件的路径.</td>
+</tr>
+<tr>
+<td align="center">$project_name</td>
+<td align="center">当前项目文件的名称.</td>
+</tr>
+<tr>
+<td align="center">$project_extension</td>
+<td align="center">当前项目文件的扩展部分.</td>
+</tr>
+<tr>
+<td align="center">$project_base_name</td>
+<td align="center">当前项目仅包括名的部分.</td>
+</tr>
+</tbody></table>
+<h2 id="自定义编译系统"><a href="#自定义编译系统" class="headerlink" title="自定义编译系统"></a>自定义编译系统</h2><p>虽然网上已有不少关于sublime编译系统的教程，但他们都没有解决python无法输入，c/c++文件编译无报错无回显等问题。</p>
+<h3 id="python编译"><a href="#python编译" class="headerlink" title="python编译"></a>python编译</h3><p>由于python通过<code>&quot;shell_cmd&quot;:&quot;python -u $file&quot;</code>已经可以解决编译运行问题，考虑的是如何新建窗口并进行输入和自动关闭。多次试验<code>&quot;shell_cmd&quot;:&quot;cmd /k start&quot;</code>和<code>&quot;shell_cmd&quot;:&quot;cmd /c start&quot;</code>后反应到sublime最下的显示框也是一个cmd窗口，调用<code>cmd /k start</code>是多此一举。</p>
+<p>直接<code>start cmd /c python -u $file_name </code>即可<br><img src="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2018-11%E8%87%AA%E5%AE%9A%E4%B9%89Sublime%E7%BC%96%E8%AF%91%E7%B3%BB%E7%BB%9F/img-201811-01BuildPython.png" alt="效果演示" style="height:600px" /> </p>
+<h3 id="C-C-编译"><a href="#C-C-编译" class="headerlink" title="C/C++编译"></a>C/C++编译</h3><p>一段时间的应用之后MinGW终于崩溃了，总算是动了解决它的心思。查阅VS2017官方文档[^3]，发现可以调用开发者工具将一个DOS命令窗设置为不同的编译环境<a href="%E8%AE%BE%E7%BD%AE%E4%B8%8D%E5%90%8C%E7%9A%84%E7%BC%96%E8%AF%91%E6%A8%A1%E5%BC%8F:https://docs.microsoft.com/en-us/cpp/build/building-on-the-command-line?view=vs-2017">^4</a>。因而解决问题的基本思路是打开DOS窗口设置为特定的编译环境，编译并运行*.exe。get✔</p>
+<p>[^3]: MS官方文档: <a target="_blank" rel="noopener" href="https://docs.microsoft.com/en-us/cpp/build/setting-the-path-and-environment-variables-for-command-line-builds?view=vs-2017">https://docs.microsoft.com/en-us/cpp/build/setting-the-path-and-environment-variables-for-command-line-builds?view=vs-2017</a></p>
+<p>在<code>Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build</code>目录中找到了需要的文件，考虑到32位代码更为通用，选择<code>vcvars32.bat&quot;</code>进行设置。<br>编译脚本：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@<span class="built_in">echo</span> off</span><br><span class="line">REM 将打开的dos设置为32位编译环境</span><br><span class="line">call <span class="string">&quot;D:\SoftWare\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat&quot;</span></span><br><span class="line">cl /EHsc %1.%2</span><br><span class="line">start cmd /c %1.exe</span><br></pre></td></tr></table></figure>
+<p>若代码编译报错显示错误信息和行号：</p>
+<img src="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2018-11%E8%87%AA%E5%AE%9A%E4%B9%89Sublime%E7%BC%96%E8%AF%91%E7%B3%BB%E7%BB%9F/img-201811-01BuildCError.png" alt="效果演示" style="height:600px" />
+
+<p>成功编译演示：</p>
+<img src="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2018-11%E8%87%AA%E5%AE%9A%E4%B9%89Sublime%E7%BC%96%E8%AF%91%E7%B3%BB%E7%BB%9F/img-201811-01BuildCSucces.png" alt="" style="height:600px" />
+
+<h3 id="基于8086的汇编语言编译"><a href="#基于8086的汇编语言编译" class="headerlink" title="基于8086的汇编语言编译"></a>基于8086的汇编语言编译</h3><p>8086的汇编语言使用masm编译，奈何大部分机器不支持16位的远古程序因而得借用DOSBox模拟DOS进行编译和链接。关于<a target="_blank" rel="noopener" href="https://www.dosbox.com/wiki/Basic_Setup_and_Installation_of_DosBoxhttps://www.dosbox.com/wiki/Basic_Setup_and_Installation_of_DosBox">DOSBox的设置参见</a></p>
+<p>考虑到它是将一个文件夹目录映射为DOS的盘符，因而以下步骤需要将MASM全家桶和编译脚本放入一个固定的文件夹中。</p>
+<p>查阅DOSBox的文档发现里面有一点启动选项的设置，果断使用执行name后退出的-exit选项，但效果不好。</p>
+<p>最终在脚本中使用exit退出。</p>
+<p><code>dosbox [name] [-exit] [-c command] [-fullscreen] [-userconf] ​       [-conf congfigfilelocation] [-lang languagefilelocation] ​       [-machine machine type] [-noconsole] [-startmapper] [-noautoexec] ​       [-securemode] [-scaler scaler | -forcescaler scaler] [-version] ​       [-socket socket]</code></p>
+<blockquote>
+<p>  name<br>​        If “name” is a directory it will mount that as the C: drive.<br>​        If “name” is an executable it will mount the directory of “name”<br>​        as the C: drive and execute “name”.</p>
+<p>  -exit<br>​        DOSBox will close itself when the DOS application “name” ends.</p>
+<p>  -c command<br>​        Runs the specified command before running “name”. Multiple commands<br>​        can be specified. Each command should start with “-c” though.<br>​        A command can be: an Internal Program, a DOS command or an executable<br>​        on a mounted drive.</p>
+<p>  -noconsole (Windows Only)<br>​        Start DOSBox without showing DOSBox Status Window (console).<br>​        Output will be redirected to stdout.txt and stderr.txt</p>
+</blockquote>
+<img src="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2018-11%E8%87%AA%E5%AE%9A%E4%B9%89Sublime%E7%BC%96%E8%AF%91%E7%B3%BB%E7%BB%9F/img-201811-01BuildAssebble.png" alt="效果演示" style="height:600px" /> 
+
+<p>新增调试模式Ctrl+Shift+B进入调试模式</p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+    <div class="copyright">
+        <p><span>本文标题:</span><a href="/2018-11%E8%87%AA%E5%AE%9A%E4%B9%89Sublime%E7%BC%96%E8%AF%91%E7%B3%BB%E7%BB%9F/">自定义Sublime编译系统</a></p>
+        <p><span>文章作者:</span><a href="/" title="回到主页">BrightSoul</a></p>
+        <p><span>发布时间:</span>2018-11-08, 23:25:15</p>
+        <!-- <p><span>最后更新:</span>2021-02-03, 17:51:40</p> -->
+        <p>
+            <span>原始链接:</span><a class="post-url" href="/2018-11%E8%87%AA%E5%AE%9A%E4%B9%89Sublime%E7%BC%96%E8%AF%91%E7%B3%BB%E7%BB%9F/" title="自定义Sublime编译系统">http://123.com/2018-11%E8%87%AA%E5%AE%9A%E4%B9%89Sublime%E7%BC%96%E8%AF%91%E7%B3%BB%E7%BB%9F/</a>
+            <span class="copy-path" data-clipboard-text="原文: http://123.com/2018-11%E8%87%AA%E5%AE%9A%E4%B9%89Sublime%E7%BC%96%E8%AF%91%E7%B3%BB%E7%BB%9F/　　作者: BrightSoul" title="点击复制文章链接"><i class="fa fa-clipboard"></i></span>
+            <script> var clipboard = new Clipboard('.copy-path'); </script>
+        </p>
+        <p>
+            <span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="CC BY-NC-SA 4.0 International" target = "_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。
+        </p>
+    </div>
+
+
+
+    <nav id="article-nav">
+        
+            <div id="article-nav-newer" class="article-nav-title">
+                <a href="/2019-12Arducopter/">
+                    PX4飞控入门
+                </a>
+            </div>
+        
+        
+            <div id="article-nav-older" class="article-nav-title">
+                <a href="/2018-10laplace/">
+                    Laplace变换
+                </a>
+            </div>
+        
+    </nav>
+
+  
+</article>
+
+    <div id="toc" class="toc-article">
+        <strong class="toc-title">文章目录</strong>
+        
+            <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Sublime%E7%9A%84%E7%BC%96%E8%AF%91%E7%B3%BB%E7%BB%9F"><span class="toc-number">1.</span> <span class="toc-text">Sublime的编译系统</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89%E7%BC%96%E8%AF%91%E7%B3%BB%E7%BB%9F"><span class="toc-number">2.</span> <span class="toc-text">自定义编译系统</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#python%E7%BC%96%E8%AF%91"><span class="toc-number">2.1.</span> <span class="toc-text">python编译</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#C-C-%E7%BC%96%E8%AF%91"><span class="toc-number">2.2.</span> <span class="toc-text">C&#x2F;C++编译</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8E8086%E7%9A%84%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80%E7%BC%96%E8%AF%91"><span class="toc-number">2.3.</span> <span class="toc-text">基于8086的汇编语言编译</span></a></li></ol></li></ol>
+        
+    </div>
+    <style>
+        .left-col .switch-btn,
+        .left-col .switch-area {
+            display: none;
+        }
+        .toc-level-3 i,
+        .toc-level-3 ol {
+            display: none !important;
+        }
+    </style>
+
+    <input type="button" id="tocButton" value="隐藏目录"  title="点击按钮隐藏或者显示文章目录">
+
+    <script>
+        yiliaConfig.toc = ["隐藏目录", "显示目录", !!"false"];
+    </script>
+
+
+
+    
+<div class="share">
+    
+        <div class="bdsharebuttonbox">
+            <a href="#" class="fa fa-twitter bds_twi" data-cmd="twi" title="分享到推特"></a>
+            <a href="#" class="fa fa-weibo bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+            <a href="#" class="fa fa-qq bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+            <a href="#" class="fa fa-files-o bds_copy" data-cmd="copy" title="复制网址"></a>
+            <a href="#" class="fa fa fa-envelope-o bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+            <a href="#" class="fa fa-weixin bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+            <a href="#" class="fa fa-share-alt bds_more" data-cmd="more"></i></a>
+        </div>
+        <script>
+            window._bd_share_config={
+                "common":{"bdSnsKey":{},"bdText":"自定义Sublime编译系统　| 我不想写博客之博客　","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+        </script>
+    
+
+    
+</div>
+
+
+
+
+
+
+
+    
+
+
+
+
+    <div class="scroll" id="post-nav-button">
+        
+            <a href="/2019-12Arducopter/" title="上一篇: PX4飞控入门">
+                <i class="fa fa-angle-left"></i>
+            </a>
+        
+
+        <a title="文章列表"><i class="fa fa-bars"></i><i class="fa fa-times"></i></a>
+
+        
+            <a href="/2018-10laplace/" title="下一篇: Laplace变换">
+                <i class="fa fa-angle-right"></i>
+            </a>
+        
+    </div>
+
+    <ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2021-01%E4%BD%BF%E7%94%A8Sphinx%E5%B0%86%E4%B8%AA%E4%BA%BA%E7%AC%94%E8%AE%B0%E5%8F%98%E6%88%90%E6%96%87%E6%A1%A3%E7%9A%84%E5%BD%A2%E7%8A%B6/">使用Sphinx将个人笔记变成文档的形状~</a></li><li class="post-list-item"><a class="post-list-link" href="/2020-06%E5%AE%9E%E9%AA%8C%E5%AE%A4%E5%85%AC%E4%BC%97%E5%8F%B7/">VIO——让无人机更自主更智能</a></li><li class="post-list-item"><a class="post-list-link" href="/2020-06VIO/">如何在AirSim中优雅的运行SLAM/VIO</a></li><li class="post-list-item"><a class="post-list-link" href="/2020-06Airsim%E4%BB%BF%E7%9C%9F/">Airsim仿真</a></li><li class="post-list-item"><a class="post-list-link" href="/2020-04%E6%96%87%E6%A1%A3%E7%9B%B8%E5%85%B3/">开发文档加载不再卡顿，亿点点提升</a></li><li class="post-list-item"><a class="post-list-link" href="/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/">APM断点和单步调试（WIN）</a></li><li class="post-list-item"><a class="post-list-link" href="/2019-12Arducopter/">PX4飞控入门</a></li><li class="post-list-item"><a class="post-list-link" href="/2018-11%E8%87%AA%E5%AE%9A%E4%B9%89Sublime%E7%BC%96%E8%AF%91%E7%B3%BB%E7%BB%9F/">自定义Sublime编译系统</a></li><li class="post-list-item"><a class="post-list-link" href="/2018-10laplace/">Laplace变换</a></li></ul>
+
+
+
+
+    <script>
+        
+    </script>
+</div>
+      <footer id="footer">
+    <div class="outer">
+        <div id="footer-info">
+            <div class="footer-left">
+                <i class="fa fa-copyright"></i> 
+                2018-2021 BrightSoul
+            </div>
+            <div class="footer-right">
+                <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减 Hexo 双栏博客主题  v3.5">Yelee</a> by MOxFIVE <i class="fa fa-heart animated infinite pulse"></i>
+            </div>
+        </div>
+        
+            <div class="visit">
+                
+                    <span id="busuanzi_container_site_pv" style='display:none'>
+                        <span id="site-visit" title="本站到访数"><i class="fa fa-user" aria-hidden="true"></i><span id="busuanzi_value_site_uv"></span>
+                        </span>
+                    </span>
+                
+                
+                    <span>| </span>
+                
+                
+                    <span id="busuanzi_container_page_pv" style='display:none'>
+                        <span id="page-visit"  title="本页阅读量"><i class="fa fa-eye animated infinite pulse" aria-hidden="true"></i><span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    </span>
+                
+            </div>
+        
+    </div>
+</footer>
+    </div>
+    
+<script data-main="/js/main.js" src="//cdn.bootcss.com/require.js/2.2.0/require.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            var iPad = window.navigator.userAgent.indexOf('iPad');
+            if (iPad > -1 || $(".left-col").css("display") === "none") {
+                var bgColorList = ["#9db3f4", "#414141", "#e5a859", "#f5dfc6", "#c084a0", "#847e72", "#cd8390", "#996731"];
+                var bgColor = Math.ceil(Math.random() * (bgColorList.length - 1));
+                $("body").css({"background-color": bgColorList[bgColor], "background-size": "cover"});
+            }
+            else {
+                var backgroundnum = 5;
+                var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+                $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+            }
+        })
+    </script>
+
+
+
+
+
+    <script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script src="//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" onclick="load$hide();" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+<script>
+    // Open in New Window
+    
+        var oOpenInNew = {
+            
+             title: "a.article-title, .article-more-link a", 
+            
+            
+            
+            
+             archives: ".archive-article-title", 
+             miniArchives: "a.post-list-link", 
+            
+             friends: "#js-friends a", 
+             socail: ".social a" 
+        }
+        for (var x in oOpenInNew) {
+            $(oOpenInNew[x]).attr("target", "_blank");
+        }
+    
+</script>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+
+    <!--[if lt IE 9]>
+        <style>body {display: none; background: none !important} </style>
+        <meta http-equiv="Refresh" Content="0; url=//outdatedbrowser.com/" />
+    <![endif]-->
+
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="format-detection" content="telephone=no" />
+<meta name="author" content="BrightSoul" />
+
+
+
+<meta name="description" content="本文首先解释了什么是VIO，介绍了VIO和SLAM的联系并对现有的VIO框架进行了调研，最后以Rovio和Vins为例，展示了如何在AirSim里跑VIO。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何在AirSim中优雅的运行SLAM&#x2F;VIO">
+<meta property="og:url" content="http://123.com/2020-06VIO/index.html">
+<meta property="og:site_name" content="我不想写博客之博客">
+<meta property="og:description" content="本文首先解释了什么是VIO，介绍了VIO和SLAM的联系并对现有的VIO框架进行了调研，最后以Rovio和Vins为例，展示了如何在AirSim里跑VIO。">
+<meta property="og:locale">
+<meta property="og:image" content="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-06VIO/image-20200602214348963.png">
+<meta property="og:image" content="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-06VIO/image-20200602221602313.png">
+<meta property="og:image" content="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-06VIO/image-20200604144039204.png">
+<meta property="og:image" content="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-06VIO/image-20200604175556665.png">
+<meta property="og:image" content="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-06VIO/platform-1591266708028.jpg">
+<meta property="og:image" content="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-06VIO/image-20200604212301728.png">
+<meta property="og:image" content="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-06VIO/image-20200604193345730.png">
+<meta property="article:published_time" content="2020-06-03T16:00:00.000Z">
+<meta property="article:modified_time" content="2021-02-03T09:59:08.885Z">
+<meta property="article:author" content="BrightSoul">
+<meta property="article:tag" content="SITL">
+<meta property="article:tag" content="AirSim">
+<meta property="article:tag" content="VIO">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-06VIO/image-20200602214348963.png">
+
+<link rel="apple-touch-icon" href= "/apple-touch-icon.png">
+
+
+    <link rel="alternate" href="/atom.xml" title="我不想写博客之博客" type="application/atom+xml">
+
+
+
+    <link rel="shortcut icon" href="/img/robot.png">
+
+
+
+    <link href="//cdn.bootcss.com/animate.css/3.5.1/animate.min.css" rel="stylesheet">
+
+
+
+    <link href="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.min.css" rel="stylesheet">
+
+
+
+    <script src="//cdn.bootcss.com/pace/1.0.2/pace.min.js"></script>
+    <link href="//cdn.bootcss.com/pace/1.0.2/themes/blue/pace-theme-minimal.css" rel="stylesheet">
+
+
+
+<link rel="stylesheet" href="/css/style.css">
+
+
+
+
+<link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+
+<title>如何在AirSim中优雅的运行SLAM/VIO | 我不想写博客之博客</title>
+
+<script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+<script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+
+<script>
+    var yiliaConfig = {
+        fancybox: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        fancybox_js: "//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.min.js",
+        scrollreveal: "//cdn.bootcss.com/scrollReveal.js/3.1.4/scrollreveal.min.js",
+        search: true
+    }
+</script>
+
+
+    <script> yiliaConfig.jquery_ui = [false]; </script>
+
+
+
+    <script> yiliaConfig.rootUrl = "\/";</script>
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.3.0"></head>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+    <header id="header" class="inner">
+        <a href="/" class="profilepic">
+            <img src="/img/BrightSoul.jpg" class="animated zoomIn">
+        </a>
+        <hgroup>
+          <h1 class="header-author"><a href="/">BrightSoul</a></h1>
+        </hgroup>
+
+        
+        <p class="header-subtitle">顺不妄喜，逆不惶馁。</p>
+        
+
+        
+            <form id="search-form">
+            <input type="text" id="local-search-input" name="q" placeholder="search..." class="search form-control" autocomplete="off" autocorrect="off" searchonload="true" />
+            <i class="fa fa-times" onclick="resetSearch()"></i>
+            </form>
+            <div id="local-search-result"></div>
+            <p class='no-result'>No results found <i class='fa fa-spinner fa-pulse'></i></p>
+        
+
+
+        
+            <div id="switch-btn" class="switch-btn">
+                <div class="icon">
+                    <div class="icon-ctn">
+                        <div class="icon-wrap icon-house" data-idx="0">
+                            <div class="birdhouse"></div>
+                            <div class="birdhouse_holes"></div>
+                        </div>
+                        <div class="icon-wrap icon-ribbon hide" data-idx="1">
+                            <div class="ribbon"></div>
+                        </div>
+                        
+                        <div class="icon-wrap icon-link hide" data-idx="2">
+                            <div class="loopback_l"></div>
+                            <div class="loopback_r"></div>
+                        </div>
+                        
+                        
+                        <div class="icon-wrap icon-me hide" data-idx="3">
+                            <div class="user"></div>
+                            <div class="shoulder"></div>
+                        </div>
+                        
+                    </div>
+                    
+                </div>
+                <div class="tips-box hide">
+                    <div class="tips-arrow"></div>
+                    <ul class="tips-inner">
+                        <li>菜单</li>
+                        <li>标签</li>
+                        
+                        <li>友情链接</li>
+                        
+                        
+                        <li>关于我</li>
+                        
+                    </ul>
+                </div>
+            </div>
+        
+
+        <div id="switch-area" class="switch-area">
+            <div class="switch-wrap">
+                <section class="switch-part switch-part1">
+                    <nav class="header-menu">
+                        <ul>
+                        
+                            <li><a href="/">主页</a></li>
+                        
+                            <li><a href="/archives/">所有文章</a></li>
+                        
+                            <li><a href="/tags/">标签云</a></li>
+                        
+                        </ul>
+                    </nav>
+                    <nav class="header-nav">
+                        <ul class="social">
+                            
+                                <a class="fa Email" href="mailto:653538096@qq.com" title="Email"></a>
+                            
+                                <a class="fa GitHub" target="_blank" rel="noopener" href="https://github.com/BrightSoulXYHY" title="GitHub"></a>
+                            
+                                <a class="fa 知乎" target="_blank" rel="noopener" href="https://www.zhihu.com/column/c_1195290248320770048" title="知乎"></a>
+                            
+                        </ul>
+                    </nav>
+                </section>
+                
+                
+                <section class="switch-part switch-part2">
+                    <div class="widget tagcloud" id="js-tagcloud">
+                        <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AirSim/" rel="tag">AirSim</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">C++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Python/" rel="tag">Python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SITL/" rel="tag">SITL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Sublime/" rel="tag">Sublime</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VIO/" rel="tag">VIO</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%BC%80%E5%8F%91%E6%96%87%E6%A1%A3/" rel="tag">开发文档</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%95%B0%E5%AD%A6/" rel="tag">数学</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%96%87%E6%A1%A3/" rel="tag">文档</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%87%AA%E5%8A%A8%E6%8E%A7%E5%88%B6%E5%8E%9F%E7%90%86/" rel="tag">自动控制原理</a></li></ul>
+                    </div>
+                </section>
+                
+                
+                
+                <section class="switch-part switch-part3">
+                    <div id="js-friends">
+                    
+                      <a class="main-nav-link switch-friends-link" target="_blank" rel="noopener" href="https://hexo.io">Hexo</a>
+                    
+                      <a class="main-nav-link switch-friends-link" target="_blank" rel="noopener" href="https://pages.github.com/">GitHub</a>
+                    
+                      <a class="main-nav-link switch-friends-link" target="_blank" rel="noopener" href="http://moxfive.xyz/">MOxFIVE</a>
+                    
+                    </div>
+                </section>
+                
+
+                
+                
+                <section class="switch-part switch-part4">
+                
+                    <div id="js-aboutme">努力成为独当一面的自动驾驶工程师。</div>
+                </section>
+                
+            </div>
+        </div>
+    </header>                
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+      <div class="overlay">
+          <div class="slider-trigger"></div>
+          <h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">BrightSoul</a></h1>
+      </div>
+    <div class="intrude-less">
+        <header id="header" class="inner">
+            <a href="/" class="profilepic">
+                <img src="/img/BrightSoul.jpg" class="animated zoomIn">
+            </a>
+            <hgroup>
+              <h1 class="header-author"><a href="/" title="回到主页">BrightSoul</a></h1>
+            </hgroup>
+            
+            <p class="header-subtitle">顺不妄喜，逆不惶馁。</p>
+            
+            <nav class="header-menu">
+                <ul>
+                
+                    <li><a href="/">主页</a></li>
+                
+                    <li><a href="/archives/">所有文章</a></li>
+                
+                    <li><a href="/tags/">标签云</a></li>
+                
+                <div class="clearfix"></div>
+                </ul>
+            </nav>
+            <nav class="header-nav">
+                        <ul class="social">
+                            
+                                <a class="fa Email" target="_blank" href="mailto:653538096@qq.com" title="Email"></a>
+                            
+                                <a class="fa GitHub" target="_blank" href="https://github.com/BrightSoulXYHY" title="GitHub"></a>
+                            
+                                <a class="fa 知乎" target="_blank" href="https://www.zhihu.com/column/c_1195290248320770048" title="知乎"></a>
+                            
+                        </ul>
+            </nav>
+        </header>                
+    </div>
+    <link class="menu-list" tags="标签" friends="友情链接" about="关于我"/>
+</nav>
+      <div class="body-wrap"><article id="post-2020-06VIO" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2020-06VIO/" class="article-date">
+      <time datetime="2020-06-03T16:00:00.000Z" itemprop="datePublished">2020-06-04</time>
+</a>
+
+
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      如何在AirSim中优雅的运行SLAM/VIO
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+    <div class="article-category tagcloud">
+    <a class="article-category-link" href="/categories/%E6%97%A0%E4%BA%BA%E6%9C%BA/">无人机</a>
+    </div>
+
+
+        
+    <div class="article-tag tagcloud">
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AirSim/" rel="tag">AirSim</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/SITL/" rel="tag">SITL</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/VIO/" rel="tag">VIO</a></li></ul>
+    </div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+          
+        <p>本文首先解释了什么是VIO，介绍了VIO和SLAM的联系并对现有的VIO框架进行了调研，最后以Rovio和Vins为例，展示了如何在AirSim里跑VIO。</p>
+<a id="more"></a>
+
+<h2 id="何为SLAM-VIO"><a href="#何为SLAM-VIO" class="headerlink" title="何为SLAM/VIO"></a>何为SLAM/VIO</h2><p>视觉惯性里程计（Visual-Inertial Odometry,  VIO）是一种将图像和IMU数据作为输入，相机移动轨迹/相机当前位置作为输出的模块。它与SLAM（Simultaneous Localization And Mapping）有着紧密的联系。经典视觉SLAM框架如下图所示，图参考了高翔博士的《视觉SLAM十四讲》。</p>
+<p><img src="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-06VIO/image-20200602214348963.png"></p>
+<p>假定我们的对象为一个搭载有各种传感器的机器人。<strong>传感器</strong>一般为相机图像，IMU和码盘等，将读取到的数据送至前端进行处理；<strong>前端</strong>可以通过读取到的数据计算相邻数据帧之间的运动；前端得到的运动轨迹并不全局一致，<strong>后端</strong>通过非线性优化获得全局一致的结果，系统中不一定有回环检测，若有将回环的结果也加入后端优化中结果会更准确；<strong>回环检测</strong>判断机器人是否处于之前走过的位置，若是则将数据传至后端进行优化；<strong>建图</strong>是根据之前的数据建立符合任务要求的地图。一般可以认为VIO是SLAM的一个子集，VIO包括了传感器读取前端后端的部分，不一定有回环检测；而定位+建图才是SLAM，SLAM必定包括回环，因为SLAM建立的地图是全局一致的。</p>
+<p>下面还有几点需要说明：</p>
+<ol>
+<li><p>若前端处理的只有图像数据则为视觉里程计（Visual Odometry,  VO）例如<a target="_blank" rel="noopener" href="https://gaas.gitbook.io/guide/software-realization-build-your-own-autonomous-drone/wu-ren-ji-zi-dong-jia-shi-xi-lie-part-3-zai-wu-gps-huan-jing-xia-tong-guo-slam-shi-xian-wei-zhi-gu-j">GASSE03</a>使用的<code>ygz_slam_ros</code>前端只利用了图像是一个VO（貌似可以加IMU不过好像没有完成？）。</p>
+</li>
+<li><p>VIO是融合了图像和IMU数据，融合的方式有松耦合和紧耦合两种。松耦合是将图像输入VO得到位姿$\mathbf{T}^-$后融合IMU数据得到更可靠的位姿$\mathbf{T}^+$；紧耦合是输入图像，提取特征，与IMU数据一起估计位姿。</p>
+<p><img src="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-06VIO/image-20200602221602313.png"></p>
+</li>
+<li><p>关于后端非线性优化的部分，一般有滤波和优化两种方法，可以认为滤波方法是只进行了一次迭代的优化方法。而关于滤波和优化的优劣还以实物效果为准，优化方法的精度较高但计算量大实时性差，滤波方法相反效率高但精度有所下降。</p>
+</li>
+</ol>
+<h2 id="VIO现状"><a href="#VIO现状" class="headerlink" title="VIO现状"></a>VIO现状</h2><p>视觉SLAM（Simultaneous Localization And Mapping）的代表性工作包括PATM、LSD-SLAM、SVO、ORB-SLAM。关于SLAM的综述推荐文献[1]。目前较为成熟的VIO框架和模型有MSCKF[2], ROVIO[3], OKVIS[4]和VINS-Mono[5]。</p>
+<p>MSCKF(Multi-State Constraint Kalman Filter)是基于滤波器SLAM的经典实现。MSCKF相比于传统的滤波器SLAM的创新在于应用了滑动窗口。在传统的EKF-SLAM框架中，特征点的信息会加入到特征向量和协方差矩阵中，相当于特征点的信息给定了初始深度和初始协方差的值。如果这个值错误，后续的计算中会发散。MSCKF维护一个FIFO的滑动窗口当特征点在滑动窗口的几个位姿都被观察到的时建立几个位姿间的约束进而更新滤波器。</p>
+<p>ROVIO是于2015年提出的以EKF为主的VIO，它将将视觉信息和IMU信息通过迭代拓展卡尔曼滤波(IEKF, Iterated Extended Kalman Filter)进行紧耦合。ROVIO将路标点及其周围的图像作为路标点的描述子，得到光度误差后变换至IEKF的更新项。整个系统使用固连关信息从而减小非线性引起的误差，而空间路标信息被分解为集束向量和深度倒数从而使得初始化无延迟。ROVIO精度和鲁棒性相对不错，在低速移动条件下可以以20Hz输出位姿信息（测试平台的CPU为i7-2760QM）；而角速度约为3.5rad/s的高速移动条件下可以较好拟合真实的移动数据；实机飞行实验中，无外加校准信息时在起飞阶段即可完成初始化。</p>
+<p>OKVIS是由 Stefan Leutenegge 等人提出的基于双目+惯导的视觉里程计，其算法是基于关键帧优化的紧耦合VIO。OKVIS是通过 IMU 测量值对当前状态做预测，根据预测进行特征提取和特征匹配，3D 点特征和二维图像特征构成优化中重投影，同时预测的 IMU 的状态量和优化的参数之间构成 IMU 测量误差，这两项误差放在一起做优化。</p>
+<p>VINS-Mono是以优化关键帧为主的VI-SLAM。首先在第一个关键帧中寻找最强的150个特征点，通过非极大值抑制半径减少误匹配。下一关键帧输入后通过光流法进行特征点匹配，经过相机畸变等校正后将位置信息发出。若在运行过程中特征点丢失会用最强最新的特征点补足。在高度为60m的实机飞行测试中，总长5.62km的路程累计漂移约为0.29%（16m）。VINS-Mono使得SLAM的应用更偏向单目视觉+IMU。单目视觉能够适应室内、室外及不同光照的环境，具有较好的适应性。</p>
+<p>关于VIO的对比表</p>
+<p><img src="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-06VIO/image-20200604144039204.png"></p>
+<h2 id="优雅的运行VIO"><a href="#优雅的运行VIO" class="headerlink" title="优雅的运行VIO"></a>优雅的运行VIO</h2><p>如何在AirSim里面优雅（并不）的运行VIO呢，要解决的问题主要有两个：坐标系对齐和数据频率。以ROVIO和Vins-Fusion为例。有关二者的编译和运行参见：</p>
+<p>ROVIO：<a target="_blank" rel="noopener" href="https://github.com/ethz-asl/rovio">https://github.com/ethz-asl/rovio</a></p>
+<p>Vins-Fusion：<a target="_blank" rel="noopener" href="https://github.com/HKUST-Aerial-Robotics/VINS-Fusion">https://github.com/HKUST-Aerial-Robotics/VINS-Fusion</a></p>
+<p><a target="_blank" rel="noopener" href="https://projects.asl.ethz.ch/datasets/doku.php?id=kmavvisualinertialdatasets">Euroc数据集</a>是一个标准的数据集，可以用来测试VIO/SLAM的精度。我们的思路是先把Euroc数据集跑通，然后从Euroc数据集推广到AirSim的数据。由于服务器在国外，官网下载比较慢，20kb/s龟速下载，之前找了百度云的分享，关注公众号回复“数据集”即可获得下载链接。</p>
+<h3 id="运行数据集"><a href="#运行数据集" class="headerlink" title="运行数据集"></a>运行数据集</h3><p>Rovio比较简单，自带launch文件，运行launch文件后播放数据集</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">roslaunch rovio rovio_node.launch</span><br><span class="line">rosbag play &lt;下载的数据集&gt;</span><br></pre></td></tr></table></figure>
+<p>打开launch文件康康，可以看到滤波器配置和相机配置文件的路径，如果坐标系的转换关系、相机参数、滤波器参数改变修改对应的配置文件。</p>
+<p><img src="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-06VIO/image-20200604175556665.png"></p>
+<p>Vins也差不多，不过没有现成的launch文件自己写一个，从运行的例子可以看出，配置文件主要在<code>config</code>文件夹下。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rosrun vins vins_node ~&#x2F;catkin_ws&#x2F;src&#x2F;VINS-Fusion&#x2F;config&#x2F;euroc&#x2F;euroc_mono_imu_config.yaml </span><br></pre></td></tr></table></figure>
+<p>自己写launch文件，后面修改相机参数就比较方便了</p>
+<p>![](<a target="_blank" rel="noopener" href="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-06VIO/Screenshot">https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-06VIO/Screenshot</a> from 2020-06-04 18-08-21.png)</p>
+<h3 id="调整坐标系"><a href="#调整坐标系" class="headerlink" title="调整坐标系"></a>调整坐标系</h3><p>首先定义坐标系，相机系和机体系，在Euroc数据集中的图示大概如下。从相机系转到机体系绕相机系的z轴转-90°。一般而言红色对应x轴，绿色对应y轴，蓝色对应z轴。</p>
+<p><img src="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-06VIO/platform-1591266708028.jpg"></p>
+<p>在Rovio中旋转用四元数表示，在VINS中用齐次矩阵表示，可以通过配置文件的参数看出，旋转对应着绕z轴转-90°</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">Rovio</span><br><span class="line">Camera0</span><br><span class="line">&#123;</span><br><span class="line">	qCM_x  0.00666398307551;</span><br><span class="line">	qCM_y  -0.0079168224269;</span><br><span class="line">	qCM_z  -0.701985972528;</span><br><span class="line">	qCM_w   0.712115587266;</span><br><span class="line">	MrMC_x -0.0111674199187;</span><br><span class="line">	MrMC_y -0.0574640920022;</span><br><span class="line">	MrMC_z 0.0207586947896;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">VINS</span><br><span class="line">body_T_cam0: !!opencv-matrix</span><br><span class="line">   rows: 4</span><br><span class="line">   cols: 4</span><br><span class="line">   dt: d</span><br><span class="line">   data: [0.0148655429818, -0.999880929698, 0.00414029679422, -0.0216401454975,</span><br><span class="line">           0.999557249008, 0.0149672133247, 0.025715529948,  -0.064676986768,</span><br><span class="line">           -0.0257744366974, 0.00375618835797, 0.999660727178, 0.00981073058949,</span><br><span class="line">           0, 0, 0, 1]</span><br></pre></td></tr></table></figure>
+<p>经过测试，使用AirSim的SampleFlight时机体系是FRD，则对应的转换矩阵为</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">Rovio</span><br><span class="line">Camera0</span><br><span class="line">&#123;</span><br><span class="line">   qCM_x  -0.500878515967;</span><br><span class="line">   qCM_y  -0.50215775337;</span><br><span class="line">   qCM_z  -0.499875139004;</span><br><span class="line">   qCM_w  0.497074590357;</span><br><span class="line">   MrMC_x -0.00479785;</span><br><span class="line">   MrMC_y 0.005052;</span><br><span class="line">   MrMC_z -0.01413185;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">VINS</span><br><span class="line">body_T_cam0: !!opencv-matrix</span><br><span class="line">  rows: 4</span><br><span class="line">  cols: 4</span><br><span class="line">  dt: d</span><br><span class="line">  data: [0, 0, 1, 0.35,</span><br><span class="line">        1, 0, 0, 0.05,</span><br><span class="line">        0, 1, 0, 0.1, </span><br><span class="line">        0., 0., 0., 1 ]</span><br></pre></td></tr></table></figure>
+<p><img src="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-06VIO/image-20200604212301728.png">在</p>
+<p>MAVROS中是FLU</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">Rovio</span><br><span class="line">Camera0</span><br><span class="line">&#123;</span><br><span class="line">   qCM_x  0.500878515967;</span><br><span class="line">   qCM_y  -0.50215775337;</span><br><span class="line">   qCM_z  0.499875139004;</span><br><span class="line">   qCM_w  0.497074590357;</span><br><span class="line">   MrMC_x -0.00479785;</span><br><span class="line">   MrMC_y 0.005052;</span><br><span class="line">   MrMC_z -0.01413185;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">VINS</span><br><span class="line">body_T_cam0: !!opencv-matrix</span><br><span class="line">  rows: 4</span><br><span class="line">  cols: 4</span><br><span class="line">  dt: d</span><br><span class="line">  data: [0, 0, 1, 0.35,</span><br><span class="line">        -1, 0, 0, 0.05,</span><br><span class="line">        0, -1, 0, 0.1, </span><br><span class="line">        0., 0., 0., 1 ]</span><br></pre></td></tr></table></figure>
+<h3 id="数据频率"><a href="#数据频率" class="headerlink" title="数据频率"></a>数据频率</h3><p>然后就是数据频率的问题，上一篇推文写了仿真的数据频率和实际的数据频率相比是差很多的，主要是IMU的频率差了5-10倍，因而效果会比较糟糕。大多数时候跑着跑着就发散了23333，不过AirSim有调整时钟频率选项，现实世界经过1s，AirSim的仿真环境中经过xs。改小之后情况有所改善，恩，有所改善。没尝试过放慢后用SITL跑VIO，SITL时的IMU数据是从<code>mavros</code>中产生，大概也会有相同的效果？</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&quot;ClockSpeed&quot;: x,</span><br></pre></td></tr></table></figure>
+<h3 id="优雅（并不）的上手"><a href="#优雅（并不）的上手" class="headerlink" title="优雅（并不）的上手"></a>优雅（并不）的上手</h3><p>下面是在分布式情况下跑的例子，用的SampleFlight，会尝试跑SITL但很容易发散。</p>
+<p>首先修改配置文件，利用AirSim的ros包获取IMU和图像数据，只有在<code>Vehicles</code>里面的实例中添加传感器信息AirSim的ros包才会获取相关数据。配置文件两台机子上要一致。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;SeeDocsAt&quot;: &quot;https:&#x2F;&#x2F;github.com&#x2F;Microsoft&#x2F;AirSim&#x2F;blob&#x2F;master&#x2F;docs&#x2F;settings.md&quot;,</span><br><span class="line">  &quot;SettingsVersion&quot;: 1.2,</span><br><span class="line">  &quot;SimMode&quot;: &quot;Multirotor&quot;,</span><br><span class="line">  &quot;ViewMode&quot;: &quot;NoDisplay&quot;,</span><br><span class="line">  &quot;ClockSpeed&quot;: 0.25,</span><br><span class="line">  &quot;Vehicles&quot;: &#123;</span><br><span class="line">    &quot;mav_00&quot;: &#123;</span><br><span class="line">      &quot;VehicleType&quot;: &quot;SimpleFlight&quot;,</span><br><span class="line">      &quot;Sensors&quot;: &#123;&quot;imu&quot;: &#123;&quot;SensorType&quot;: 2, &quot;Enabled&quot;: true &#125; &#125;,</span><br><span class="line">      &quot;Cameras&quot;: &#123;&quot;ccam&quot;: &#123;&quot;CaptureSettings&quot;: [&#123;&quot;ImageType&quot;: 0, &quot;Width&quot;: 640, &quot;Height&quot;: 480, &quot;FOV_Degrees&quot;: 90, &quot;TargetGamma&quot;: 1.5 &#125; ], &quot;X&quot;: 0.35, &quot;Y&quot;: -0.05, &quot;Z&quot;: -0.1, &quot;Pitch&quot;: 0, &quot;Roll&quot;: 0, &quot;Yaw&quot;: 0 &#125; &#125;,</span><br><span class="line">      &quot;X&quot;: 0, &quot;Y&quot;: 0, &quot;Z&quot;: 0, &quot;Pitch&quot;: 0, &quot;Roll&quot;: 0, &quot;Yaw&quot;: 0</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;  </span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>运行AirSim的ros包，cd到AirSim源码目录，编译，运行。编译的时候好像要求gcc8，当时遇到过坑不过好像问题不大，搜一下就解决了，所以忘记了（吐舌）。<code>airsim_node.launch</code>里面改一下ip。数据量还是蛮大的，大概30MB/s建议配一个千兆路由器或者网线直连。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cd &#x2F;AirSim_Linux&#x2F;ros</span><br><span class="line">catkin_make</span><br><span class="line">source devel&#x2F;setup.bash</span><br><span class="line">roslaunch airsim_ros_pkgs airsim_node.launch</span><br></pre></td></tr></table></figure>
+<p>IMU数据和图像数据就推出来了，修改VIO的launch文件后运行，需要remap一下相应的话题</p>
+<p>对Rovio而言需要多写一个图像转换的节点，Rovio要求输入的图像是灰度图，滤波器和相机的配置文件复制了一份原版，然后按照上一步调整坐标系的步骤修改了参数。</p>
+<p><img src="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-06VIO/image-20200604193345730.png"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">source devel&#x2F;setup.bash</span><br><span class="line">roslaunch rovio &lt;自己写的launch&gt;</span><br></pre></td></tr></table></figure>
+<p>对Vins而言也差不多，把3.1写的launch跑起来就ok了。</p>
+<p>下面是演示视频</p>
+<h2 id="文献列表"><a href="#文献列表" class="headerlink" title="文献列表"></a>文献列表</h2><p>[1]  刘浩敏, 章国锋, 鲍虎军. 基于单目视觉的同时定位与地图构建方法综述[J]. 计算机辅助设计与图形学学报, 2016, 28(6): 855-868.</p>
+<p>[2]  Mourikis A, Roumeliotis S. A multi-state constraint Kalman filter for vision-aided inertial navigation[C]. Proceedings of IEEE International Conference on Robotics and Automation. Los Alamitos: IEEE Computer Society Press, 2007: 3565-3572</p>
+<p>[3]  Sun K, Mohta K, Pfrommer B. Robust stereo visual inertial odometry for fast autonomous flight[J]. IEEE Robotics and Automation Letters, 2018, 3(2): 965-972.</p>
+<p>[4]  Leutenegger S, Lynen S, Bosse M. Keyframe-based visual–inertial odometry using nonlinear optimization[J]. The International Journal of Robotics Research, 2015, 34(3): 314-334.</p>
+<p>[5] Qin T, Li P, Shen S. Vins-mono: A robust and versatile monocular visual-inertial state estimator[J]. IEEE Transactions on Robotics, 2018, 34(4): 1004-1020.</p>
+<p>P.S. 终于写够了原创的篇数可以开启赞赏啦！这篇写了大概3500+吧，如果喜欢我的分享请给我一点支持和鼓励哟。顺便，一开始准备沿用孤独的梦想家的名号的，被占用只好改了hhhh，可怜弱小无助还特么能吃。</p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+    <div class="copyright">
+        <p><span>本文标题:</span><a href="/2020-06VIO/">如何在AirSim中优雅的运行SLAM/VIO</a></p>
+        <p><span>文章作者:</span><a href="/" title="回到主页">BrightSoul</a></p>
+        <p><span>发布时间:</span>2020-06-04, 00:00:00</p>
+        <!-- <p><span>最后更新:</span>2021-02-03, 17:59:08</p> -->
+        <p>
+            <span>原始链接:</span><a class="post-url" href="/2020-06VIO/" title="如何在AirSim中优雅的运行SLAM/VIO">http://123.com/2020-06VIO/</a>
+            <span class="copy-path" data-clipboard-text="原文: http://123.com/2020-06VIO/　　作者: BrightSoul" title="点击复制文章链接"><i class="fa fa-clipboard"></i></span>
+            <script> var clipboard = new Clipboard('.copy-path'); </script>
+        </p>
+        <p>
+            <span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="CC BY-NC-SA 4.0 International" target = "_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。
+        </p>
+    </div>
+
+
+
+    <nav id="article-nav">
+        
+            <div id="article-nav-newer" class="article-nav-title">
+                <a href="/2020-06%E5%AE%9E%E9%AA%8C%E5%AE%A4%E5%85%AC%E4%BC%97%E5%8F%B7/">
+                    VIO——让无人机更自主更智能
+                </a>
+            </div>
+        
+        
+            <div id="article-nav-older" class="article-nav-title">
+                <a href="/2020-06Airsim%E4%BB%BF%E7%9C%9F/">
+                    Airsim仿真
+                </a>
+            </div>
+        
+    </nav>
+
+  
+</article>
+
+    <div id="toc" class="toc-article">
+        <strong class="toc-title">文章目录</strong>
+        
+            <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%95%E4%B8%BASLAM-VIO"><span class="toc-number">1.</span> <span class="toc-text">何为SLAM&#x2F;VIO</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#VIO%E7%8E%B0%E7%8A%B6"><span class="toc-number">2.</span> <span class="toc-text">VIO现状</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BC%98%E9%9B%85%E7%9A%84%E8%BF%90%E8%A1%8CVIO"><span class="toc-number">3.</span> <span class="toc-text">优雅的运行VIO</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%90%E8%A1%8C%E6%95%B0%E6%8D%AE%E9%9B%86"><span class="toc-number">3.1.</span> <span class="toc-text">运行数据集</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B0%83%E6%95%B4%E5%9D%90%E6%A0%87%E7%B3%BB"><span class="toc-number">3.2.</span> <span class="toc-text">调整坐标系</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E9%A2%91%E7%8E%87"><span class="toc-number">3.3.</span> <span class="toc-text">数据频率</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%98%E9%9B%85%EF%BC%88%E5%B9%B6%E4%B8%8D%EF%BC%89%E7%9A%84%E4%B8%8A%E6%89%8B"><span class="toc-number">3.4.</span> <span class="toc-text">优雅（并不）的上手</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%87%E7%8C%AE%E5%88%97%E8%A1%A8"><span class="toc-number">4.</span> <span class="toc-text">文献列表</span></a></li></ol>
+        
+    </div>
+    <style>
+        .left-col .switch-btn,
+        .left-col .switch-area {
+            display: none;
+        }
+        .toc-level-3 i,
+        .toc-level-3 ol {
+            display: none !important;
+        }
+    </style>
+
+    <input type="button" id="tocButton" value="隐藏目录"  title="点击按钮隐藏或者显示文章目录">
+
+    <script>
+        yiliaConfig.toc = ["隐藏目录", "显示目录", !!"false"];
+    </script>
+
+
+
+    
+<div class="share">
+    
+        <div class="bdsharebuttonbox">
+            <a href="#" class="fa fa-twitter bds_twi" data-cmd="twi" title="分享到推特"></a>
+            <a href="#" class="fa fa-weibo bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+            <a href="#" class="fa fa-qq bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+            <a href="#" class="fa fa-files-o bds_copy" data-cmd="copy" title="复制网址"></a>
+            <a href="#" class="fa fa fa-envelope-o bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+            <a href="#" class="fa fa-weixin bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+            <a href="#" class="fa fa-share-alt bds_more" data-cmd="more"></i></a>
+        </div>
+        <script>
+            window._bd_share_config={
+                "common":{"bdSnsKey":{},"bdText":"如何在AirSim中优雅的运行SLAM/VIO　| 我不想写博客之博客　","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+        </script>
+    
+
+    
+</div>
+
+
+
+
+
+
+
+    
+
+
+
+
+    <div class="scroll" id="post-nav-button">
+        
+            <a href="/2020-06%E5%AE%9E%E9%AA%8C%E5%AE%A4%E5%85%AC%E4%BC%97%E5%8F%B7/" title="上一篇: VIO——让无人机更自主更智能">
+                <i class="fa fa-angle-left"></i>
+            </a>
+        
+
+        <a title="文章列表"><i class="fa fa-bars"></i><i class="fa fa-times"></i></a>
+
+        
+            <a href="/2020-06Airsim%E4%BB%BF%E7%9C%9F/" title="下一篇: Airsim仿真">
+                <i class="fa fa-angle-right"></i>
+            </a>
+        
+    </div>
+
+    <ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2021-01%E4%BD%BF%E7%94%A8Sphinx%E5%B0%86%E4%B8%AA%E4%BA%BA%E7%AC%94%E8%AE%B0%E5%8F%98%E6%88%90%E6%96%87%E6%A1%A3%E7%9A%84%E5%BD%A2%E7%8A%B6/">使用Sphinx将个人笔记变成文档的形状~</a></li><li class="post-list-item"><a class="post-list-link" href="/2020-06%E5%AE%9E%E9%AA%8C%E5%AE%A4%E5%85%AC%E4%BC%97%E5%8F%B7/">VIO——让无人机更自主更智能</a></li><li class="post-list-item"><a class="post-list-link" href="/2020-06VIO/">如何在AirSim中优雅的运行SLAM/VIO</a></li><li class="post-list-item"><a class="post-list-link" href="/2020-06Airsim%E4%BB%BF%E7%9C%9F/">Airsim仿真</a></li><li class="post-list-item"><a class="post-list-link" href="/2020-04%E6%96%87%E6%A1%A3%E7%9B%B8%E5%85%B3/">开发文档加载不再卡顿，亿点点提升</a></li><li class="post-list-item"><a class="post-list-link" href="/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/">APM断点和单步调试（WIN）</a></li><li class="post-list-item"><a class="post-list-link" href="/2019-12Arducopter/">PX4飞控入门</a></li><li class="post-list-item"><a class="post-list-link" href="/2018-11%E8%87%AA%E5%AE%9A%E4%B9%89Sublime%E7%BC%96%E8%AF%91%E7%B3%BB%E7%BB%9F/">自定义Sublime编译系统</a></li><li class="post-list-item"><a class="post-list-link" href="/2018-10laplace/">Laplace变换</a></li></ul>
+
+
+
+
+    <script>
+        
+    </script>
+</div>
+      <footer id="footer">
+    <div class="outer">
+        <div id="footer-info">
+            <div class="footer-left">
+                <i class="fa fa-copyright"></i> 
+                2018-2021 BrightSoul
+            </div>
+            <div class="footer-right">
+                <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减 Hexo 双栏博客主题  v3.5">Yelee</a> by MOxFIVE <i class="fa fa-heart animated infinite pulse"></i>
+            </div>
+        </div>
+        
+            <div class="visit">
+                
+                    <span id="busuanzi_container_site_pv" style='display:none'>
+                        <span id="site-visit" title="本站到访数"><i class="fa fa-user" aria-hidden="true"></i><span id="busuanzi_value_site_uv"></span>
+                        </span>
+                    </span>
+                
+                
+                    <span>| </span>
+                
+                
+                    <span id="busuanzi_container_page_pv" style='display:none'>
+                        <span id="page-visit"  title="本页阅读量"><i class="fa fa-eye animated infinite pulse" aria-hidden="true"></i><span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    </span>
+                
+            </div>
+        
+    </div>
+</footer>
+    </div>
+    
+<script data-main="/js/main.js" src="//cdn.bootcss.com/require.js/2.2.0/require.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            var iPad = window.navigator.userAgent.indexOf('iPad');
+            if (iPad > -1 || $(".left-col").css("display") === "none") {
+                var bgColorList = ["#9db3f4", "#414141", "#e5a859", "#f5dfc6", "#c084a0", "#847e72", "#cd8390", "#996731"];
+                var bgColor = Math.ceil(Math.random() * (bgColorList.length - 1));
+                $("body").css({"background-color": bgColorList[bgColor], "background-size": "cover"});
+            }
+            else {
+                var backgroundnum = 5;
+                var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+                $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+            }
+        })
+    </script>
+
+
+
+
+
+    <script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script src="//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" onclick="load$hide();" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+<script>
+    // Open in New Window
+    
+        var oOpenInNew = {
+            
+             title: "a.article-title, .article-more-link a", 
+            
+            
+            
+            
+             archives: ".archive-article-title", 
+             miniArchives: "a.post-list-link", 
+            
+             friends: "#js-friends a", 
+             socail: ".social a" 
+        }
+        for (var x in oOpenInNew) {
+            $(oOpenInNew[x]).attr("target", "_blank");
+        }
+    
+</script>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>
