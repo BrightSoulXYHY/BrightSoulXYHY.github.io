@@ -15,26 +15,24 @@
 
 
 
-<meta name="description" content="作为一个头(ku)秃(bi)的开发者，查阅各种文档是家常便饭，但由于中国特色在查阅一些文档时总是加载中。而且有时外场调试还不一定有网，因而将文档本地化是相当有必要的。本文介绍了一种将文档编译为静态网页并本地查阅的方法。 以Pixhawk飞控相关文档为例。APM的官方wiki是用Sphinx进行编译，支持的格式也比较丰富，编译为静态html后可以方便的查找和跳转。而PX4相关的文档主要是用gitbo">
+<meta name="description" content="本篇分享WIN平台下如何对APM断点调试和单步调试，主要是基于WSL的编译环境和VScode作为编辑器 首先需要成功用WSL编译APM固件，由于不是重点会在文末提稍微提一下。 调试流程part1&#x2F;疑难杂症part2&#x2F;wsl环境搭建part3">
 <meta property="og:type" content="article">
-<meta property="og:title" content="开发文档加载不再卡顿，亿点点提升">
-<meta property="og:url" content="http://123.com/2020-04%E6%96%87%E6%A1%A3%E7%9B%B8%E5%85%B3/index.html">
+<meta property="og:title" content="APM断点和单步调试（WIN）">
+<meta property="og:url" content="https://brightsoulxyhy.github.io/articles/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/index.html">
 <meta property="og:site_name" content="我不想写博客之博客">
-<meta property="og:description" content="作为一个头(ku)秃(bi)的开发者，查阅各种文档是家常便饭，但由于中国特色在查阅一些文档时总是加载中。而且有时外场调试还不一定有网，因而将文档本地化是相当有必要的。本文介绍了一种将文档编译为静态网页并本地查阅的方法。 以Pixhawk飞控相关文档为例。APM的官方wiki是用Sphinx进行编译，支持的格式也比较丰富，编译为静态html后可以方便的查找和跳转。而PX4相关的文档主要是用gitbo">
+<meta property="og:description" content="本篇分享WIN平台下如何对APM断点调试和单步调试，主要是基于WSL的编译环境和VScode作为编辑器 首先需要成功用WSL编译APM固件，由于不是重点会在文末提稍微提一下。 调试流程part1&#x2F;疑难杂症part2&#x2F;wsl环境搭建part3">
 <meta property="og:locale">
-<meta property="og:image" content="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-04%E6%96%87%E6%A1%A3%E7%9B%B8%E5%85%B3/image-20200412175203199.png">
-<meta property="og:image" content="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-04%E6%96%87%E6%A1%A3%E7%9B%B8%E5%85%B3/image-20200412180356005.png">
-<meta property="og:image" content="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-04%E6%96%87%E6%A1%A3%E7%9B%B8%E5%85%B3/image-20200412180434105.png">
-<meta property="og:image" content="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-04%E6%96%87%E6%A1%A3%E7%9B%B8%E5%85%B3/image-20200412185144750.png">
-<meta property="og:image" content="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-04%E6%96%87%E6%A1%A3%E7%9B%B8%E5%85%B3/image-20200412182822115.png">
-<meta property="og:image" content="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-04%E6%96%87%E6%A1%A3%E7%9B%B8%E5%85%B3/image-20200412184540335.png">
-<meta property="og:image" content="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-04%E6%96%87%E6%A1%A3%E7%9B%B8%E5%85%B3/qrcode.png">
-<meta property="article:published_time" content="2020-04-11T16:00:00.000Z">
-<meta property="article:modified_time" content="2021-02-03T09:53:36.079Z">
+<meta property="og:image" content="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/image-20200210210201210.png">
+<meta property="og:image" content="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/image-20200210205649254.png">
+<meta property="og:image" content="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/image-20200210205315000.png">
+<meta property="og:image" content="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/qrcode-1581342418849.png">
+<meta property="article:published_time" content="2020-02-10T16:00:00.000Z">
+<meta property="article:modified_time" content="2021-02-03T09:53:41.656Z">
 <meta property="article:author" content="BrightSoul">
-<meta property="article:tag" content="开发文档">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="SITL">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-04%E6%96%87%E6%A1%A3%E7%9B%B8%E5%85%B3/image-20200412175203199.png">
+<meta name="twitter:image" content="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/image-20200210210201210.png">
 
 <link rel="apple-touch-icon" href= "/apple-touch-icon.png">
 
@@ -68,7 +66,7 @@
 <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
 
 
-<title>开发文档加载不再卡顿，亿点点提升 | 我不想写博客之博客</title>
+<title>APM断点和单步调试（WIN） | 我不想写博客之博客</title>
 
 <script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
 <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
@@ -275,11 +273,11 @@
     </div>
     <link class="menu-list" tags="标签" friends="友情链接" about="关于我"/>
 </nav>
-      <div class="body-wrap"><article id="post-2020-04文档相关" class="article article-type-post" itemscope itemprop="blogPost">
+      <div class="body-wrap"><article id="post-2020-02APM断点和单步调试（WIN）" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
-      <a href="/2020-04%E6%96%87%E6%A1%A3%E7%9B%B8%E5%85%B3/" class="article-date">
-      <time datetime="2020-04-11T16:00:00.000Z" itemprop="datePublished">2020-04-12</time>
+      <a href="/articles/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/" class="article-date">
+      <time datetime="2020-02-10T16:00:00.000Z" itemprop="datePublished">2020-02-11</time>
 </a>
 
 
@@ -294,7 +292,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      开发文档加载不再卡顿，亿点点提升
+      APM断点和单步调试（WIN）
     </h1>
   
 
@@ -303,13 +301,13 @@
       <div class="article-info article-info-post">
         
     <div class="article-category tagcloud">
-    <a class="article-category-link" href="/categories/%E7%BC%96%E7%A8%8B/">编程</a>
+    <a class="article-category-link" href="/categories/%E6%97%A0%E4%BA%BA%E6%9C%BA/">无人机</a>
     </div>
 
 
         
     <div class="article-tag tagcloud">
-        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%BC%80%E5%8F%91%E6%96%87%E6%A1%A3/" rel="tag">开发文档</a></li></ul>
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C/" rel="tag">C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/SITL/" rel="tag">SITL</a></li></ul>
     </div>
 
         <div class="clearfix"></div>
@@ -319,37 +317,56 @@
     <div class="article-entry" itemprop="articleBody">
       
           
-        <p>作为一个头(ku)秃(bi)的开发者，查阅各种文档是家常便饭，但由于中国特色在查阅一些文档时总是加载中。而且有时外场调试还不一定有网，因而将文档本地化是相当有必要的。本文介绍了一种将文档编译为静态网页并本地查阅的方法。</p>
-<p>以Pixhawk飞控相关文档为例。APM的官方wiki是用Sphinx进行编译，支持的格式也比较丰富，编译为静态html后可以方便的查找和跳转。而PX4相关的文档主要是用gitbook进行编译管理，相比与Sphinx增加了多语言的切换，但作为静态网页挂载时无法直接跳转。因而考虑使用Nginx作为web服务器挂载网页gitbook类的文档。</p>
-<p>建议以下的步骤都在Linux系统下操作，虚拟机或WSL。Win也可以，但会有这样那样的奇怪问题。</p>
+        <p>本篇分享WIN平台下如何对APM断点调试和单步调试，主要是基于WSL的编译环境和VScode作为编辑器</p>
+<p>首先需要成功用WSL编译APM固件，由于不是重点会在文末提稍微提一下。</p>
+<p>调试流程part1/疑难杂症part2/wsl环境搭建part3</p>
 <a id="more"></a>
 
-<h2 id="APM文档本地化"><a href="#APM文档本地化" class="headerlink" title="APM文档本地化"></a>APM文档本地化</h2><p>APM文档的官方repo为<a target="_blank" rel="noopener" href="https://github.com/ArduPilot/ardupilot_wiki%EF%BC%8C%E4%B8%8B%E8%BD%BD%E5%AE%8C%E6%88%90%E5%90%8E%E6%90%AD%E5%BB%BA%E6%96%87%E6%A1%A3%E7%9A%84%E7%BC%96%E8%AF%91%E7%8E%AF%E5%A2%83%EF%BC%8C%E5%AE%98%E6%96%B9%E8%AF%B4%E6%98%8E%E5%9C%A8[%E8%BF%99%E9%87%8C](https://ardupilot.org/dev/docs/common-wiki-editing-infra-overview.html)%E3%80%82%E5%A4%A7%E4%BD%93%E6%98%AF%E5%AE%89%E8%A3%85%E4%BA%86sphinx%E7%9A%841.8.3%E7%89%88%E6%9C%AC%E7%84%B6%E5%90%8E%E8%A3%85%E4%BA%86%E4%B8%80%E4%BA%9B%E6%8F%92%E4%BB%B6%EF%BC%8C%E5%AE%98%E6%96%B9%E6%8F%90%E4%BE%9B%E4%BA%86Docker%E5%92%8CVagrant%E7%9A%84%E7%9B%B8%E5%85%B3%E8%84%9A%E6%9C%AC%E3%80%82WSL%E6%88%96%E8%80%85%E8%99%9A%E6%8B%9F%E6%9C%BA%E8%BF%90%E8%A1%8C%60Sphinxsetup.sh%60%EF%BC%8C%E7%AD%89%E5%BE%85%E7%8E%AF%E5%A2%83%E8%AE%BE%E7%BD%AE%E5%AE%8C%E6%88%90%E5%90%8E%E5%9C%A8%E6%A0%B9%E7%9B%AE%E5%BD%95%E4%B8%8B%60make%60%E5%8D%B3%E5%8F%AF%E4%BB%A5%E7%BC%96%E8%AF%91%E7%9B%B8%E5%85%B3%E7%9A%84%E5%85%A8%E9%83%A8%E6%96%87%E6%A1%A3%E3%80%82">https://github.com/ArduPilot/ardupilot_wiki，下载完成后搭建文档的编译环境，官方说明在[这里](https://ardupilot.org/dev/docs/common-wiki-editing-infra-overview.html)。大体是安装了sphinx的1.8.3版本然后装了一些插件，官方提供了Docker和Vagrant的相关脚本。WSL或者虚拟机运行`Sphinxsetup.sh`，等待环境设置完成后在根目录下`make`即可以编译相关的全部文档。</a></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># 相关指令</span><br><span class="line">git clone https:&#x2F;&#x2F;github.com&#x2F;ArduPilot&#x2F;ardupilot_wiki.git</span><br><span class="line">cd ardupilot_wiki</span><br><span class="line">.&#x2F;Sphinxsetup.sh</span><br><span class="line">make</span><br></pre></td></tr></table></figure>
-<p>编译完成截图</p>
-<p><img src="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-04%E6%96%87%E6%A1%A3%E7%9B%B8%E5%85%B3/image-20200412175203199.png"></p>
-<p>之前的版本目录会抽风来着，不过问题不大。新版本好像修复了这个问题</p>
-<p><img src="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-04%E6%96%87%E6%A1%A3%E7%9B%B8%E5%85%B3/image-20200412180356005.png"></p>
-<p>可以将主页的相关路径改为存放相关载具的路径，这样打开主页即可跳转相关的文档</p>
-<p>打开<code>ardupilot\index.html</code>，定位到177行左右，将<code>https://ardupilot.org</code>替换为存放html主页的文件夹，比如<code>file:///F:/Progroming/_Doc_Src/ardupilot_wiki/_build</code></p>
-<p><img src="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-04%E6%96%87%E6%A1%A3%E7%9B%B8%E5%85%B3/image-20200412180434105.png"></p>
-<p>之后编写一个python小脚本就可以方便的管理文档啦。</p>
-<p><img src="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-04%E6%96%87%E6%A1%A3%E7%9B%B8%E5%85%B3/image-20200412185144750.png"></p>
-<h2 id="PX4文档本地化"><a href="#PX4文档本地化" class="headerlink" title="PX4文档本地化"></a>PX4文档本地化</h2><p>PX4的文档比APM更多更杂，常用的是PX4的开发者手册和Mavlink的开发者手册，相关的repo链接如下</p>
-<p>分别为Mavlink的开发者手册，px4的开发手册和用户手册，qgc的开发手册</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">https:&#x2F;&#x2F;github.com&#x2F;mavlink&#x2F;mavlink-devguide.git</span><br><span class="line">https:&#x2F;&#x2F;github.com&#x2F;PX4&#x2F;dev.px4.io.git</span><br><span class="line">https:&#x2F;&#x2F;github.com&#x2F;PX4&#x2F;px4_user_guide.git</span><br><span class="line">https:&#x2F;&#x2F;github.com&#x2F;mavlink&#x2F;qgc-dev-guide.git</span><br></pre></td></tr></table></figure>
-<p>gitbook编译文档比之前的方便，不过编译时各种插件还是有些bug（win上），linux上可以成功编译，安装好gitbook之后进行编译，生成<code>_book</code>目录以及相关的语言。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd &lt;dir of docs&gt;</span><br><span class="line">gitbook init</span><br><span class="line">gitbook build</span><br></pre></td></tr></table></figure>
-<p>不过缺点是无法直接单击跳转，考虑用Nginx辅助，安装Nginx后修改配置文件</p>
-<p>可以使用<code>nginx -t</code>命令查看<code>nginx.conf</code>的具体路径</p>
-<p>在配置文件中的http中添加下面的配置，可以添加多个，修改玩配置文件后重启nginx</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">	listen       &lt;port_num&gt;;</span><br><span class="line">	location &#x2F; &#123;</span><br><span class="line">		root &lt;path of dir&gt;;</span><br><span class="line">		index  index.html index.htm;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>然后就可以通过访问<code>127.0.0.1:&lt;port_num&gt;</code>愉快的使用本地文档啦</p>
-<p><img src="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-04%E6%96%87%E6%A1%A3%E7%9B%B8%E5%85%B3/image-20200412182822115.png"></p>
-<h2 id="伸手党的福利"><a href="#伸手党的福利" class="headerlink" title="伸手党的福利"></a>伸手党的福利</h2><p>当然，懒得走上面的编译流程可以直接下载编译好的文档，因为时间问题，没有把所有的文档都编译为最新版本，有需自取。后缀为文档的更新日期和git的commit hash，PX4文档的hash实在找不到了，只记得对应的版本了。</p>
-<p><img src="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-04%E6%96%87%E6%A1%A3%E7%9B%B8%E5%85%B3/image-20200412184540335.png"></p>
-<p>关注公众号，并回复”无人机文档”下载相关文件</p>
-<p><img src="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-04%E6%96%87%E6%A1%A3%E7%9B%B8%E5%85%B3/qrcode.png"></p>
+<h2 id="调试流程"><a href="#调试流程" class="headerlink" title="调试流程"></a>调试流程</h2><p>首先用vscode打开Ardupilot文件夹</p>
+<p>设定vscode的launch任务，复制文本如下，有几个需要注意的点</p>
+<p><img src="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/image-20200210210201210.png"></p>
+<ol>
+<li>“program”选项是在wsl里面的路径，wsl里面将win的cdef等盘挂载在<code>/mnt</code>目录下，对比win的路径修改一下。如果是rover则<code>ardurover</code>，copter是<code>arducopter</code>其他的fram对应修改一下</li>
+<li>这个部分是告诉vscode实际的路径需要转化一下，搬运就行，注意改盘符</li>
+<li>由于使用gdb进行调试，需要在wsl里面安装gdb，没有安装的话<code>sudo apt install gdb </code> ，一般gdb路径就在哪里</li>
+</ol>
+<p>设定完成后在wsl编译debug类型的sitl，以rover为例</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;waf configure --debug</span><br><span class="line">.&#x2F;waf rover</span><br></pre></td></tr></table></figure>
+<p>编译完成后在对应目录下启动仿真脚本</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cd APMrover2&#x2F;</span><br><span class="line">..&#x2F;Tools&#x2F;autotest&#x2F;sim_vehicle.py -N </span><br><span class="line">或者</span><br><span class="line">..&#x2F;Tools&#x2F;autotest&#x2F;sim_vehicle.py -D</span><br></pre></td></tr></table></figure>
+<p>N为nobuild，编译过了加-N直接启动仿真</p>
+<p>D为在启动仿真之前设置debug参数并重新编译</p>
+<p>启动完成后切回vscode，按F5选择<code>ardurover</code>的进程，然后愉快的调试吧</p>
+<p>可能有疑难杂症，转P2。</p>
+<p>成功调试如图，支持断点支持单步。</p>
+<p>F10/F11调试快捷键，单步执行或跳入</p>
+<p><img src="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/image-20200210205649254.png"></p>
+<h2 id="疑难杂症"><a href="#疑难杂症" class="headerlink" title="疑难杂症"></a>疑难杂症</h2><p>如果你在启动调试的时候看到这个，那么恭喜。产生它的原因很多，慢慢排除</p>
+<p><img src="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/image-20200210205315000.png"></p>
+<ol>
+<li>WSL的设置</li>
+</ol>
+<p>一般都是这个，可以暂时的方法解决或者永久的，不过对WSL貌似电脑重启永久方法就失效来着</p>
+<p>临时办法：WSL里面执行下面的命令再启动仿真脚本，产生报错好像和内核安全有关。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo 0 | sudo tee &#x2F;proc&#x2F;sys&#x2F;kernel&#x2F;yama&#x2F;ptrace_scope</span><br></pre></td></tr></table></figure>
+<p>永久办法：设置<code>/etc/sysctl.d/10-ptrace.conf</code>里面的参数<code>kernel.yama.ptrace_scope = 0</code>然后重启服务<code>sudo service procps restart</code></p>
+<ol start="2">
+<li>Vscode的launch文件路径设置有误</li>
+</ol>
+<p>检查盘符和对应的固件名称</p>
+<ol start="3">
+<li>Vscode权限不足</li>
+</ol>
+<p>以管理员权限运行Vscode，遇到过几次，玄学bug</p>
+<h2 id="WSL编译环境搭建"><a href="#WSL编译环境搭建" class="headerlink" title="WSL编译环境搭建"></a>WSL编译环境搭建</h2><p>假设你已经安装好了WSL，你需要做如下几步，下载代码，安装依赖，编译。</p>
+<p>github日常被墙网速，大家自行解决</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># 下载代码</span><br><span class="line">git clone https:&#x2F;&#x2F;github.com&#x2F;ardupilot&#x2F;ardupilot.git</span><br><span class="line">cd ardupilot</span><br><span class="line">git submodule update --init --recursive</span><br><span class="line"></span><br><span class="line"># 安装依赖</span><br><span class="line">.&#x2F;Tools&#x2F;environment_install&#x2F;install-prereqs-ubuntu.sh -y</span><br></pre></td></tr></table></figure>
+<p>然后就可以愉快的编译了。网络问题是个问题，不过应该问题不大。</p>
+<p>请关注我吧~</p>
+<p>会分享一些无人机和机器人的小技巧</p>
+<p><img src="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/qrcode-1581342418849.png"></p>
+<p>P.S: 虽然说是WIN平台下，不过有些坎wsl还是跨不过去。在安装双系统用上Ubuntu之后感觉Ubuntu真香，大家不妨试试双系统。</p>
+<p>然后公众号大概会保持月更的频率吧，不定期更新。</p>
 
       
     </div>
@@ -358,13 +375,13 @@
   
     
     <div class="copyright">
-        <p><span>本文标题:</span><a href="/2020-04%E6%96%87%E6%A1%A3%E7%9B%B8%E5%85%B3/">开发文档加载不再卡顿，亿点点提升</a></p>
+        <p><span>本文标题:</span><a href="/articles/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/">APM断点和单步调试（WIN）</a></p>
         <p><span>文章作者:</span><a href="/" title="回到主页">BrightSoul</a></p>
-        <p><span>发布时间:</span>2020-04-12, 00:00:00</p>
-        <!-- <p><span>最后更新:</span>2021-02-03, 17:53:36</p> -->
+        <p><span>发布时间:</span>2020-02-11, 00:00:00</p>
+        <!-- <p><span>最后更新:</span>2021-02-03, 17:53:41</p> -->
         <p>
-            <span>原始链接:</span><a class="post-url" href="/2020-04%E6%96%87%E6%A1%A3%E7%9B%B8%E5%85%B3/" title="开发文档加载不再卡顿，亿点点提升">http://123.com/2020-04%E6%96%87%E6%A1%A3%E7%9B%B8%E5%85%B3/</a>
-            <span class="copy-path" data-clipboard-text="原文: http://123.com/2020-04%E6%96%87%E6%A1%A3%E7%9B%B8%E5%85%B3/　　作者: BrightSoul" title="点击复制文章链接"><i class="fa fa-clipboard"></i></span>
+            <span>原始链接:</span><a class="post-url" href="/articles/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/" title="APM断点和单步调试（WIN）">https://brightsoulxyhy.github.io/articles/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/</a>
+            <span class="copy-path" data-clipboard-text="原文: https://brightsoulxyhy.github.io/articles/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/　　作者: BrightSoul" title="点击复制文章链接"><i class="fa fa-clipboard"></i></span>
             <script> var clipboard = new Clipboard('.copy-path'); </script>
         </p>
         <p>
@@ -377,15 +394,15 @@
     <nav id="article-nav">
         
             <div id="article-nav-newer" class="article-nav-title">
-                <a href="/2020-06Airsim%E4%BB%BF%E7%9C%9F/">
-                    Airsim仿真
+                <a href="/articles/2020-04%E6%96%87%E6%A1%A3%E7%9B%B8%E5%85%B3/">
+                    开发文档加载不再卡顿，亿点点提升
                 </a>
             </div>
         
         
             <div id="article-nav-older" class="article-nav-title">
-                <a href="/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/">
-                    APM断点和单步调试（WIN）
+                <a href="/articles/2019-12Arducopter/">
+                    PX4飞控入门
                 </a>
             </div>
         
@@ -397,7 +414,7 @@
     <div id="toc" class="toc-article">
         <strong class="toc-title">文章目录</strong>
         
-            <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#APM%E6%96%87%E6%A1%A3%E6%9C%AC%E5%9C%B0%E5%8C%96"><span class="toc-number">1.</span> <span class="toc-text">APM文档本地化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PX4%E6%96%87%E6%A1%A3%E6%9C%AC%E5%9C%B0%E5%8C%96"><span class="toc-number">2.</span> <span class="toc-text">PX4文档本地化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BC%B8%E6%89%8B%E5%85%9A%E7%9A%84%E7%A6%8F%E5%88%A9"><span class="toc-number">3.</span> <span class="toc-text">伸手党的福利</span></a></li></ol>
+            <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B0%83%E8%AF%95%E6%B5%81%E7%A8%8B"><span class="toc-number">1.</span> <span class="toc-text">调试流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%96%91%E9%9A%BE%E6%9D%82%E7%97%87"><span class="toc-number">2.</span> <span class="toc-text">疑难杂症</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#WSL%E7%BC%96%E8%AF%91%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA"><span class="toc-number">3.</span> <span class="toc-text">WSL编译环境搭建</span></a></li></ol>
         
     </div>
     <style>
@@ -433,7 +450,7 @@
         </div>
         <script>
             window._bd_share_config={
-                "common":{"bdSnsKey":{},"bdText":"开发文档加载不再卡顿，亿点点提升　| 我不想写博客之博客　","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+                "common":{"bdSnsKey":{},"bdText":"APM断点和单步调试（WIN）　| 我不想写博客之博客　","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
         </script>
     
 
@@ -453,7 +470,7 @@
 
     <div class="scroll" id="post-nav-button">
         
-            <a href="/2020-06Airsim%E4%BB%BF%E7%9C%9F/" title="上一篇: Airsim仿真">
+            <a href="/articles/2020-04%E6%96%87%E6%A1%A3%E7%9B%B8%E5%85%B3/" title="上一篇: 开发文档加载不再卡顿，亿点点提升">
                 <i class="fa fa-angle-left"></i>
             </a>
         
@@ -461,13 +478,13 @@
         <a title="文章列表"><i class="fa fa-bars"></i><i class="fa fa-times"></i></a>
 
         
-            <a href="/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/" title="下一篇: APM断点和单步调试（WIN）">
+            <a href="/articles/2019-12Arducopter/" title="下一篇: PX4飞控入门">
                 <i class="fa fa-angle-right"></i>
             </a>
         
     </div>
 
-    <ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2021-01%E4%BD%BF%E7%94%A8Sphinx%E5%B0%86%E4%B8%AA%E4%BA%BA%E7%AC%94%E8%AE%B0%E5%8F%98%E6%88%90%E6%96%87%E6%A1%A3%E7%9A%84%E5%BD%A2%E7%8A%B6/">使用Sphinx将个人笔记变成文档的形状~</a></li><li class="post-list-item"><a class="post-list-link" href="/2020-06%E5%AE%9E%E9%AA%8C%E5%AE%A4%E5%85%AC%E4%BC%97%E5%8F%B7/">VIO——让无人机更自主更智能</a></li><li class="post-list-item"><a class="post-list-link" href="/2020-06VIO/">如何在AirSim中优雅的运行SLAM/VIO</a></li><li class="post-list-item"><a class="post-list-link" href="/2020-06Airsim%E4%BB%BF%E7%9C%9F/">Airsim仿真</a></li><li class="post-list-item"><a class="post-list-link" href="/2020-04%E6%96%87%E6%A1%A3%E7%9B%B8%E5%85%B3/">开发文档加载不再卡顿，亿点点提升</a></li><li class="post-list-item"><a class="post-list-link" href="/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/">APM断点和单步调试（WIN）</a></li><li class="post-list-item"><a class="post-list-link" href="/2019-12Arducopter/">PX4飞控入门</a></li><li class="post-list-item"><a class="post-list-link" href="/2018-11%E8%87%AA%E5%AE%9A%E4%B9%89Sublime%E7%BC%96%E8%AF%91%E7%B3%BB%E7%BB%9F/">自定义Sublime编译系统</a></li><li class="post-list-item"><a class="post-list-link" href="/2018-10laplace/">Laplace变换</a></li></ul>
+    <ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/articles/2021-01%E4%BD%BF%E7%94%A8Sphinx%E5%B0%86%E4%B8%AA%E4%BA%BA%E7%AC%94%E8%AE%B0%E5%8F%98%E6%88%90%E6%96%87%E6%A1%A3%E7%9A%84%E5%BD%A2%E7%8A%B6/">使用Sphinx将个人笔记变成文档的形状~</a></li><li class="post-list-item"><a class="post-list-link" href="/articles/2020-06%E5%AE%9E%E9%AA%8C%E5%AE%A4%E5%85%AC%E4%BC%97%E5%8F%B7/">VIO——让无人机更自主更智能</a></li><li class="post-list-item"><a class="post-list-link" href="/articles/2020-06VIO/">如何在AirSim中优雅的运行SLAM/VIO</a></li><li class="post-list-item"><a class="post-list-link" href="/articles/2020-06Airsim%E4%BB%BF%E7%9C%9F/">Airsim仿真</a></li><li class="post-list-item"><a class="post-list-link" href="/articles/2020-04%E6%96%87%E6%A1%A3%E7%9B%B8%E5%85%B3/">开发文档加载不再卡顿，亿点点提升</a></li><li class="post-list-item"><a class="post-list-link" href="/articles/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/">APM断点和单步调试（WIN）</a></li><li class="post-list-item"><a class="post-list-link" href="/articles/2019-12Arducopter/">PX4飞控入门</a></li><li class="post-list-item"><a class="post-list-link" href="/articles/2018-11%E8%87%AA%E5%AE%9A%E4%B9%89Sublime%E7%BC%96%E8%AF%91%E7%B3%BB%E7%BB%9F/">自定义Sublime编译系统</a></li><li class="post-list-item"><a class="post-list-link" href="/articles/2018-10laplace/">Laplace变换</a></li></ul>
 
 
 

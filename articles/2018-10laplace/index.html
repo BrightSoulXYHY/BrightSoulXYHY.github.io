@@ -15,24 +15,19 @@
 
 
 
-<meta name="description" content="本篇分享WIN平台下如何对APM断点调试和单步调试，主要是基于WSL的编译环境和VScode作为编辑器 首先需要成功用WSL编译APM固件，由于不是重点会在文末提稍微提一下。 调试流程part1&#x2F;疑难杂症part2&#x2F;wsl环境搭建part3">
+<meta name="description" content="拉普拉斯(Laplace)变换是分析和求解常系数线性微分方程的一种简便的方法，而且在自动控制系统的分析和综合中也起着重要的作用。 本文是学习完Laplace变换后的一些总结和归纳。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="APM断点和单步调试（WIN）">
-<meta property="og:url" content="http://123.com/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/index.html">
+<meta property="og:title" content="Laplace变换">
+<meta property="og:url" content="https://brightsoulxyhy.github.io/articles/2018-10laplace/index.html">
 <meta property="og:site_name" content="我不想写博客之博客">
-<meta property="og:description" content="本篇分享WIN平台下如何对APM断点调试和单步调试，主要是基于WSL的编译环境和VScode作为编辑器 首先需要成功用WSL编译APM固件，由于不是重点会在文末提稍微提一下。 调试流程part1&#x2F;疑难杂症part2&#x2F;wsl环境搭建part3">
+<meta property="og:description" content="拉普拉斯(Laplace)变换是分析和求解常系数线性微分方程的一种简便的方法，而且在自动控制系统的分析和综合中也起着重要的作用。 本文是学习完Laplace变换后的一些总结和归纳。">
 <meta property="og:locale">
-<meta property="og:image" content="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/image-20200210210201210.png">
-<meta property="og:image" content="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/image-20200210205649254.png">
-<meta property="og:image" content="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/image-20200210205315000.png">
-<meta property="og:image" content="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/qrcode-1581342418849.png">
-<meta property="article:published_time" content="2020-02-10T16:00:00.000Z">
-<meta property="article:modified_time" content="2021-02-03T09:53:41.656Z">
+<meta property="article:published_time" content="2018-10-02T12:05:36.000Z">
+<meta property="article:modified_time" content="2021-02-03T09:51:39.548Z">
 <meta property="article:author" content="BrightSoul">
-<meta property="article:tag" content="C++">
-<meta property="article:tag" content="SITL">
+<meta property="article:tag" content="数学">
+<meta property="article:tag" content="自动控制原理">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/image-20200210210201210.png">
 
 <link rel="apple-touch-icon" href= "/apple-touch-icon.png">
 
@@ -66,7 +61,7 @@
 <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
 
 
-<title>APM断点和单步调试（WIN） | 我不想写博客之博客</title>
+<title>Laplace变换 | 我不想写博客之博客</title>
 
 <script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
 <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
@@ -273,11 +268,11 @@
     </div>
     <link class="menu-list" tags="标签" friends="友情链接" about="关于我"/>
 </nav>
-      <div class="body-wrap"><article id="post-2020-02APM断点和单步调试（WIN）" class="article article-type-post" itemscope itemprop="blogPost">
+      <div class="body-wrap"><article id="post-2018-10laplace" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
-      <a href="/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/" class="article-date">
-      <time datetime="2020-02-10T16:00:00.000Z" itemprop="datePublished">2020-02-11</time>
+      <a href="/articles/2018-10laplace/" class="article-date">
+      <time datetime="2018-10-02T12:05:36.000Z" itemprop="datePublished">2018-10-02</time>
 </a>
 
 
@@ -292,7 +287,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      APM断点和单步调试（WIN）
+      Laplace变换
     </h1>
   
 
@@ -301,13 +296,13 @@
       <div class="article-info article-info-post">
         
     <div class="article-category tagcloud">
-    <a class="article-category-link" href="/categories/%E6%97%A0%E4%BA%BA%E6%9C%BA/">无人机</a>
+    <a class="article-category-link" href="/categories/%E7%83%AD%E7%88%B1%E5%AD%A6%E4%B9%A0/">热爱学习</a>
     </div>
 
 
         
     <div class="article-tag tagcloud">
-        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C/" rel="tag">C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/SITL/" rel="tag">SITL</a></li></ul>
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%95%B0%E5%AD%A6/" rel="tag">数学</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%87%AA%E5%8A%A8%E6%8E%A7%E5%88%B6%E5%8E%9F%E7%90%86/" rel="tag">自动控制原理</a></li></ul>
     </div>
 
         <div class="clearfix"></div>
@@ -317,56 +312,113 @@
     <div class="article-entry" itemprop="articleBody">
       
           
-        <p>本篇分享WIN平台下如何对APM断点调试和单步调试，主要是基于WSL的编译环境和VScode作为编辑器</p>
-<p>首先需要成功用WSL编译APM固件，由于不是重点会在文末提稍微提一下。</p>
-<p>调试流程part1/疑难杂症part2/wsl环境搭建part3</p>
+        <p>拉普拉斯(Laplace)变换是分析和求解常系数线性微分方程的一种简便的方法，而且在自动控制系统的分析和综合中也起着重要的作用。</p>
+<p>本文是学习完Laplace变换后的一些总结和归纳。</p>
 <a id="more"></a>
 
-<h2 id="调试流程"><a href="#调试流程" class="headerlink" title="调试流程"></a>调试流程</h2><p>首先用vscode打开Ardupilot文件夹</p>
-<p>设定vscode的launch任务，复制文本如下，有几个需要注意的点</p>
-<p><img src="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/image-20200210210201210.png"></p>
-<ol>
-<li>“program”选项是在wsl里面的路径，wsl里面将win的cdef等盘挂载在<code>/mnt</code>目录下，对比win的路径修改一下。如果是rover则<code>ardurover</code>，copter是<code>arducopter</code>其他的fram对应修改一下</li>
-<li>这个部分是告诉vscode实际的路径需要转化一下，搬运就行，注意改盘符</li>
-<li>由于使用gdb进行调试，需要在wsl里面安装gdb，没有安装的话<code>sudo apt install gdb </code> ，一般gdb路径就在哪里</li>
-</ol>
-<p>设定完成后在wsl编译debug类型的sitl，以rover为例</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;waf configure --debug</span><br><span class="line">.&#x2F;waf rover</span><br></pre></td></tr></table></figure>
-<p>编译完成后在对应目录下启动仿真脚本</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cd APMrover2&#x2F;</span><br><span class="line">..&#x2F;Tools&#x2F;autotest&#x2F;sim_vehicle.py -N </span><br><span class="line">或者</span><br><span class="line">..&#x2F;Tools&#x2F;autotest&#x2F;sim_vehicle.py -D</span><br></pre></td></tr></table></figure>
-<p>N为nobuild，编译过了加-N直接启动仿真</p>
-<p>D为在启动仿真之前设置debug参数并重新编译</p>
-<p>启动完成后切回vscode，按F5选择<code>ardurover</code>的进程，然后愉快的调试吧</p>
-<p>可能有疑难杂症，转P2。</p>
-<p>成功调试如图，支持断点支持单步。</p>
-<p>F10/F11调试快捷键，单步执行或跳入</p>
-<p><img src="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/image-20200210205649254.png"></p>
-<h2 id="疑难杂症"><a href="#疑难杂症" class="headerlink" title="疑难杂症"></a>疑难杂症</h2><p>如果你在启动调试的时候看到这个，那么恭喜。产生它的原因很多，慢慢排除</p>
-<p><img src="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/image-20200210205315000.png"></p>
-<ol>
-<li>WSL的设置</li>
-</ol>
-<p>一般都是这个，可以暂时的方法解决或者永久的，不过对WSL貌似电脑重启永久方法就失效来着</p>
-<p>临时办法：WSL里面执行下面的命令再启动仿真脚本，产生报错好像和内核安全有关。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo 0 | sudo tee &#x2F;proc&#x2F;sys&#x2F;kernel&#x2F;yama&#x2F;ptrace_scope</span><br></pre></td></tr></table></figure>
-<p>永久办法：设置<code>/etc/sysctl.d/10-ptrace.conf</code>里面的参数<code>kernel.yama.ptrace_scope = 0</code>然后重启服务<code>sudo service procps restart</code></p>
-<ol start="2">
-<li>Vscode的launch文件路径设置有误</li>
-</ol>
-<p>检查盘符和对应的固件名称</p>
-<ol start="3">
-<li>Vscode权限不足</li>
-</ol>
-<p>以管理员权限运行Vscode，遇到过几次，玄学bug</p>
-<h2 id="WSL编译环境搭建"><a href="#WSL编译环境搭建" class="headerlink" title="WSL编译环境搭建"></a>WSL编译环境搭建</h2><p>假设你已经安装好了WSL，你需要做如下几步，下载代码，安装依赖，编译。</p>
-<p>github日常被墙网速，大家自行解决</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># 下载代码</span><br><span class="line">git clone https:&#x2F;&#x2F;github.com&#x2F;ardupilot&#x2F;ardupilot.git</span><br><span class="line">cd ardupilot</span><br><span class="line">git submodule update --init --recursive</span><br><span class="line"></span><br><span class="line"># 安装依赖</span><br><span class="line">.&#x2F;Tools&#x2F;environment_install&#x2F;install-prereqs-ubuntu.sh -y</span><br></pre></td></tr></table></figure>
-<p>然后就可以愉快的编译了。网络问题是个问题，不过应该问题不大。</p>
-<p>请关注我吧~</p>
-<p>会分享一些无人机和机器人的小技巧</p>
-<p><img src="https://hexo-blog-bs.oss-cn-beijing.aliyuncs.com/_blog-img/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/qrcode-1581342418849.png"></p>
-<p>P.S: 虽然说是WIN平台下，不过有些坎wsl还是跨不过去。在安装双系统用上Ubuntu之后感觉Ubuntu真香，大家不妨试试双系统。</p>
-<p>然后公众号大概会保持月更的频率吧，不定期更新。</p>
+<p>定义$\mathcal{L}[f(t)]=\int_{0}^{+\infty} f(t)e^{-st} dt = F(s)$</p>
+<p>例1：$\mathcal{L}[e^{at}] = \frac {1}{s-a}$<br>$F(s)=\mathcal{L}[f(t)] = \int_0^{+\infty} e^{at}e^{-st} dt = \int_0^{+\infty} e^{-(s-a)t} dt = -\frac {1}{s-a}e^{-(s-a)t}|_0^{+\infty} = \frac {1}{s-a}$</p>
+<p>例2：$\mathcal{L}[\cos{at}] = \frac {s}{s^2+a^2}$<br>$\because \cos {at} = \frac {1}{2}(e^{iat}+e^{-iat})$</p>
+<p>$<br>\begin{eqnarray}<br>F(s)  &amp; = &amp; \mathcal{L}[f(t)] = \int_0^{+\infty} \frac {1}{2}(e^{iat}+e^{-iat})e^{-st} dt \<br>&amp; = &amp; \frac{1}{2} \int_0^{+\infty} e^{-(s-ai)t} dt + \int_0^{+\infty} e^{-(s+ai)t} dt) \<br>&amp; = &amp; \frac{1}{2} (\frac {1}{s-ai} + \frac {1}{s+ai}) = \frac {s}{s^2+a^2}<br>\end{eqnarray}<br>$</p>
+<p>例3：$\mathcal{L}[\sin{at}] = \frac {s}{s^2+a^2}$<br>$\because \sin {at} = \frac {1}{2i}(e^{iat}-e^{-iat})$</p>
+<p>$<br>\begin{eqnarray}<br>F(s) &amp; = &amp; \mathcal{L}[f(t)] = \int_0^{+\infty} \frac {1}{2i}(e^{iat}-e^{-iat})e^{-st} dt \<br>&amp; = &amp; \frac{1}{2i} \int_0^{+\infty} e^{-(s-ai)t} dt - \int_0^{+\infty} e^{-(s+ai)t} dt) \<br>&amp; = &amp; \frac{1}{2i} (\frac {1}{s-ai} - \frac {1}{s+ai}) = \frac {a}{s^2+a^2}<br>\end{eqnarray}<br>$</p>
+<h2 id="Laplace变换简表"><a href="#Laplace变换简表" class="headerlink" title="Laplace变换简表"></a>Laplace变换简表</h2><table>
+<thead>
+<tr>
+<th align="center">$f(t)$</th>
+<th align="center">$\mathcal{L}[f(t)]$</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">$\delta(t)$</td>
+<td align="center">1</td>
+</tr>
+<tr>
+<td align="center">1</td>
+<td align="center">$\frac{1}{s}$</td>
+</tr>
+<tr>
+<td align="center">$t$</td>
+<td align="center">$\frac{1}{s^2}$</td>
+</tr>
+<tr>
+<td align="center">$t^n$</td>
+<td align="center">$\frac{n!}{s^{n+1}}$</td>
+</tr>
+<tr>
+<td align="center">$e^a$</td>
+<td align="center">$\frac{1}{s-a}$</td>
+</tr>
+<tr>
+<td align="center">$\cos at$/$\sin at$</td>
+<td align="center">$\frac{s}{s^2+a^2}$/$\frac{a}{s^2+a^2}$</td>
+</tr>
+<tr>
+<td align="center">$\cosh at$/$\sinh at$</td>
+<td align="center">$\frac{s}{s^2-a^2}$/$\frac{a}{s^2-a^2}$</td>
+</tr>
+<tr>
+<td align="center">$t\cos at$/$t\sin at$</td>
+<td align="center">$\frac{s^2-a^2}{(s^2+a^2)}$/$\frac{2as}{(s^2+a^2)^2}$</td>
+</tr>
+<tr>
+<td align="center">$t\cosh at$/$t\sinh at$</td>
+<td align="center">$\frac{s^2+a^2}{(s^2-a^2)^2}$/$\frac{2as}{(s^2-a^2)^2}$</td>
+</tr>
+</tbody></table>
+<h2 id="Lapace常用性质"><a href="#Lapace常用性质" class="headerlink" title="Lapace常用性质"></a>Lapace常用性质</h2><table>
+<thead>
+<tr>
+<th align="center">性质</th>
+<th align="center">表达式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">线性性质</td>
+<td align="center">齐次性</td>
+</tr>
+<tr>
+<td align="center">线性性质</td>
+<td align="center">叠加性</td>
+</tr>
+<tr>
+<td align="center">微分性质</td>
+<td align="center">$\mathcal{L}\left[ f^{\left( n \right)}\left( t \right) \right] =s^nF\left( s \right) -\sum_{i+j=n}^{}{s^if^{\left( j \right)}\left( 0 \right)}$</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">$\mathcal{L}\left[ f’\left( t \right) \right] =sF\left( s \right) -f’\left( 0 \right)$</td>
+</tr>
+<tr>
+<td align="center">积分性质</td>
+<td align="center">$\mathcal{L}\left[ \int{f\left( t \right) dt} \right] =\frac{F\left( s \right)}{s}$</td>
+</tr>
+<tr>
+<td align="center">位移性质</td>
+<td align="center">$\mathcal{L}\left[ e^{at}f\left( t \right) \right] =F\left( s-a \right)$</td>
+</tr>
+<tr>
+<td align="center">延迟性质</td>
+<td align="center">$\mathcal{L}\left[ u\left( t-a \right) f\left( t-a \right) \right] =e^{-as}F\left( s \right) $</td>
+</tr>
+<tr>
+<td align="center">终值/初值定理</td>
+<td align="center">$\underset{t\rightarrow 0}{\lim}f\left( t \right) =\underset{s\rightarrow \infty}{\lim}sF\left( s \right) / \underset{t\rightarrow 0}{\lim}f\left( t \right) =\underset{s\rightarrow \infty}{\lim}sF\left( s \right)$</td>
+</tr>
+<tr>
+<td align="center">卷积定理</td>
+<td align="center">$\mathcal{L}\left[ \int_0^t{f_1\left( t-\tau \right) f_2\left( \tau \right) dt} \right] =F_1\left( s \right) F_2\left( s \right)$</td>
+</tr>
+</tbody></table>
+<h2 id="Laplace逆变换的技巧"><a href="#Laplace逆变换的技巧" class="headerlink" title="Laplace逆变换的技巧"></a>Laplace逆变换的技巧</h2><p>一般而言Laplace$可以化为形如$$<br>F\left( s \right) =\frac{B\left( s \right)}{A\left( s \right)}=\frac{b_ms^m+b_{m-1}s^{m-1}+\cdots +b_1+b_0}{a_ns^n+a_{n-1}s^{n-1}+\cdots +a_1+a_0}<br>$的形式，而可以用因式分裂化为单个有理真分式。</p>
+<p>当$A(s)=0$无重根时</p>
+<p>$F\left( s \right) =\frac{B\left( s \right)}{\left( s-s_1 \right) \left( s-s_2 \right) \cdots \left( s-s_n \right)}$,可以化为$A\left( s \right) =\frac{c_i}{s-s_i}$，其中$c_i=\underset{s\rightarrow s_i}{\lim}\left( s-s_i \right) F\left( s \right) $</p>
+<p>当$A(s)=0$有重根时</p>
+<p>$F\left( s \right) =\frac{B\left( s \right)}{\left( s-s_1 \right) ^r\left( s-s_2 \right) \cdots \left( s-s_n \right)}$,非重根同上，重根部分求导</p>
+<p>$c_1=\underset{s\rightarrow s_i}{\lim}\left( s-s_i \right)^r F\left( s \right) $</p>
+<p>$c_n=\frac{1}{\left( n-1 \right) !}\underset{s\rightarrow s_i}{\lim}\frac{\text{d}^n}{\text{d}x^n}\left[ \left( s-s_i \right) F\left( s \right) \right] $</p>
+<p>从而可以进行逆变换</p>
+<p><strong>例</strong>：$F\left( s \right) =\frac{1}{\left( s-2 \right) \left( s-1 \right) ^2}$<br>$$<br>\begin{eqnarray}<br>&amp; c_1 &amp; =\underset{s\rightarrow 2}{\lim}\left( s-2 \right) F\left( s \right) =\frac{1}{\left( 2-1 \right) ^2}=1<br>\<br>&amp; c_2 &amp; =\underset{s\rightarrow 1}{\lim}\left( s-1 \right) ^2F\left( s \right) =\frac{1}{1-2}=-1<br>\<br>&amp; c_3 &amp; =\underset{s\rightarrow 1}{\lim}\frac{\text{d}}{\text{d}x}\left( s-1 \right) ^2F\left( s \right) =-\frac{1}{\left( 1-2 \right) ^2}=-1<br>\<br>&amp; F &amp;\left( s \right) =\frac{1}{\left( s-2 \right) \left( s-1 \right) ^2}=\frac{1}{s-2}-\frac{1}{\left( s-1 \right) ^2}+\frac{1}{s-1}<br>\end{eqnarray}<br>$$</p>
 
       
     </div>
@@ -375,13 +427,13 @@
   
     
     <div class="copyright">
-        <p><span>本文标题:</span><a href="/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/">APM断点和单步调试（WIN）</a></p>
+        <p><span>本文标题:</span><a href="/articles/2018-10laplace/">Laplace变换</a></p>
         <p><span>文章作者:</span><a href="/" title="回到主页">BrightSoul</a></p>
-        <p><span>发布时间:</span>2020-02-11, 00:00:00</p>
-        <!-- <p><span>最后更新:</span>2021-02-03, 17:53:41</p> -->
+        <p><span>发布时间:</span>2018-10-02, 20:05:36</p>
+        <!-- <p><span>最后更新:</span>2021-02-03, 17:51:39</p> -->
         <p>
-            <span>原始链接:</span><a class="post-url" href="/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/" title="APM断点和单步调试（WIN）">http://123.com/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/</a>
-            <span class="copy-path" data-clipboard-text="原文: http://123.com/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/　　作者: BrightSoul" title="点击复制文章链接"><i class="fa fa-clipboard"></i></span>
+            <span>原始链接:</span><a class="post-url" href="/articles/2018-10laplace/" title="Laplace变换">https://brightsoulxyhy.github.io/articles/2018-10laplace/</a>
+            <span class="copy-path" data-clipboard-text="原文: https://brightsoulxyhy.github.io/articles/2018-10laplace/　　作者: BrightSoul" title="点击复制文章链接"><i class="fa fa-clipboard"></i></span>
             <script> var clipboard = new Clipboard('.copy-path'); </script>
         </p>
         <p>
@@ -394,17 +446,11 @@
     <nav id="article-nav">
         
             <div id="article-nav-newer" class="article-nav-title">
-                <a href="/2020-04%E6%96%87%E6%A1%A3%E7%9B%B8%E5%85%B3/">
-                    开发文档加载不再卡顿，亿点点提升
+                <a href="/articles/2018-11%E8%87%AA%E5%AE%9A%E4%B9%89Sublime%E7%BC%96%E8%AF%91%E7%B3%BB%E7%BB%9F/">
+                    自定义Sublime编译系统
                 </a>
             </div>
         
-        
-            <div id="article-nav-older" class="article-nav-title">
-                <a href="/2019-12Arducopter/">
-                    PX4飞控入门
-                </a>
-            </div>
         
     </nav>
 
@@ -414,7 +460,7 @@
     <div id="toc" class="toc-article">
         <strong class="toc-title">文章目录</strong>
         
-            <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B0%83%E8%AF%95%E6%B5%81%E7%A8%8B"><span class="toc-number">1.</span> <span class="toc-text">调试流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%96%91%E9%9A%BE%E6%9D%82%E7%97%87"><span class="toc-number">2.</span> <span class="toc-text">疑难杂症</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#WSL%E7%BC%96%E8%AF%91%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA"><span class="toc-number">3.</span> <span class="toc-text">WSL编译环境搭建</span></a></li></ol>
+            <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Laplace%E5%8F%98%E6%8D%A2%E7%AE%80%E8%A1%A8"><span class="toc-number">1.</span> <span class="toc-text">Laplace变换简表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Lapace%E5%B8%B8%E7%94%A8%E6%80%A7%E8%B4%A8"><span class="toc-number">2.</span> <span class="toc-text">Lapace常用性质</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Laplace%E9%80%86%E5%8F%98%E6%8D%A2%E7%9A%84%E6%8A%80%E5%B7%A7"><span class="toc-number">3.</span> <span class="toc-text">Laplace逆变换的技巧</span></a></li></ol>
         
     </div>
     <style>
@@ -450,7 +496,7 @@
         </div>
         <script>
             window._bd_share_config={
-                "common":{"bdSnsKey":{},"bdText":"APM断点和单步调试（WIN）　| 我不想写博客之博客　","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+                "common":{"bdSnsKey":{},"bdText":"Laplace变换　| 我不想写博客之博客　","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
         </script>
     
 
@@ -470,7 +516,7 @@
 
     <div class="scroll" id="post-nav-button">
         
-            <a href="/2020-04%E6%96%87%E6%A1%A3%E7%9B%B8%E5%85%B3/" title="上一篇: 开发文档加载不再卡顿，亿点点提升">
+            <a href="/articles/2018-11%E8%87%AA%E5%AE%9A%E4%B9%89Sublime%E7%BC%96%E8%AF%91%E7%B3%BB%E7%BB%9F/" title="上一篇: 自定义Sublime编译系统">
                 <i class="fa fa-angle-left"></i>
             </a>
         
@@ -478,13 +524,11 @@
         <a title="文章列表"><i class="fa fa-bars"></i><i class="fa fa-times"></i></a>
 
         
-            <a href="/2019-12Arducopter/" title="下一篇: PX4飞控入门">
-                <i class="fa fa-angle-right"></i>
-            </a>
+            <a href="/" title="回到主页"><i class="fa fa-home"></i></a>
         
     </div>
 
-    <ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2021-01%E4%BD%BF%E7%94%A8Sphinx%E5%B0%86%E4%B8%AA%E4%BA%BA%E7%AC%94%E8%AE%B0%E5%8F%98%E6%88%90%E6%96%87%E6%A1%A3%E7%9A%84%E5%BD%A2%E7%8A%B6/">使用Sphinx将个人笔记变成文档的形状~</a></li><li class="post-list-item"><a class="post-list-link" href="/2020-06%E5%AE%9E%E9%AA%8C%E5%AE%A4%E5%85%AC%E4%BC%97%E5%8F%B7/">VIO——让无人机更自主更智能</a></li><li class="post-list-item"><a class="post-list-link" href="/2020-06VIO/">如何在AirSim中优雅的运行SLAM/VIO</a></li><li class="post-list-item"><a class="post-list-link" href="/2020-06Airsim%E4%BB%BF%E7%9C%9F/">Airsim仿真</a></li><li class="post-list-item"><a class="post-list-link" href="/2020-04%E6%96%87%E6%A1%A3%E7%9B%B8%E5%85%B3/">开发文档加载不再卡顿，亿点点提升</a></li><li class="post-list-item"><a class="post-list-link" href="/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/">APM断点和单步调试（WIN）</a></li><li class="post-list-item"><a class="post-list-link" href="/2019-12Arducopter/">PX4飞控入门</a></li><li class="post-list-item"><a class="post-list-link" href="/2018-11%E8%87%AA%E5%AE%9A%E4%B9%89Sublime%E7%BC%96%E8%AF%91%E7%B3%BB%E7%BB%9F/">自定义Sublime编译系统</a></li><li class="post-list-item"><a class="post-list-link" href="/2018-10laplace/">Laplace变换</a></li></ul>
+    <ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/articles/2021-01%E4%BD%BF%E7%94%A8Sphinx%E5%B0%86%E4%B8%AA%E4%BA%BA%E7%AC%94%E8%AE%B0%E5%8F%98%E6%88%90%E6%96%87%E6%A1%A3%E7%9A%84%E5%BD%A2%E7%8A%B6/">使用Sphinx将个人笔记变成文档的形状~</a></li><li class="post-list-item"><a class="post-list-link" href="/articles/2020-06%E5%AE%9E%E9%AA%8C%E5%AE%A4%E5%85%AC%E4%BC%97%E5%8F%B7/">VIO——让无人机更自主更智能</a></li><li class="post-list-item"><a class="post-list-link" href="/articles/2020-06VIO/">如何在AirSim中优雅的运行SLAM/VIO</a></li><li class="post-list-item"><a class="post-list-link" href="/articles/2020-06Airsim%E4%BB%BF%E7%9C%9F/">Airsim仿真</a></li><li class="post-list-item"><a class="post-list-link" href="/articles/2020-04%E6%96%87%E6%A1%A3%E7%9B%B8%E5%85%B3/">开发文档加载不再卡顿，亿点点提升</a></li><li class="post-list-item"><a class="post-list-link" href="/articles/2020-02APM%E6%96%AD%E7%82%B9%E5%92%8C%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95%EF%BC%88WIN%EF%BC%89/">APM断点和单步调试（WIN）</a></li><li class="post-list-item"><a class="post-list-link" href="/articles/2019-12Arducopter/">PX4飞控入门</a></li><li class="post-list-item"><a class="post-list-link" href="/articles/2018-11%E8%87%AA%E5%AE%9A%E4%B9%89Sublime%E7%BC%96%E8%AF%91%E7%B3%BB%E7%BB%9F/">自定义Sublime编译系统</a></li><li class="post-list-item"><a class="post-list-link" href="/articles/2018-10laplace/">Laplace变换</a></li></ul>
 
 
 
